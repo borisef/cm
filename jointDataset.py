@@ -170,6 +170,7 @@ class chenColorDataset:
         for idx, folder in enumerate(folderList):
             folderPath = self.path+r'/'+folder
             fileList = os.listdir(folderPath)
+            fileList = [element for element in fileList if (element.endswith(".png") or element.endswith(".jpg") or element.endswith(".tif"))]
             for idx2, file in enumerate(fileList):
                 filePath = os.path.abspath(os.path.join(folderPath, file))
                 #dstPath = os.path.abspath(os.path.join(folderPath, '{sum:09d}.jpg'.format(sum=idx2)))

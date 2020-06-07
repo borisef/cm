@@ -72,8 +72,13 @@ os.mkdir(k2tf_dir)
 
 
 
-trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4'), gamma_correction=False)
-testSet = chenColorDataset(os.path.join(dataPrePath, r'Database_with_MB/testset'), gamma_correction=False)
+#trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4'), gamma_correction=False)
+#
+trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4boris7colors'), gamma_correction=False)
+
+#testSet = chenColorDataset(os.path.join(dataPrePath, r'Database_with_MB/testset'), gamma_correction=False)
+testSet = chenColorDataset(r"e:/projects/MB/ColorNitzan/ATR/data_koby/test", gamma_correction=False)
+
 dataSetHistogram(trainSet.allData['labels'], trainSet.hotEncodeReverse, os.path.join(stat_save_dir,"hist.png"))
 
 #Model Architecture
