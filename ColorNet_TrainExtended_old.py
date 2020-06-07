@@ -2,6 +2,8 @@ import numpy as np
 import os
 import cv2
 import shutil
+import platform
+import k2tf
 
 import tensorflow as tf
 from tensorflow.python.tools import freeze_graph
@@ -9,8 +11,6 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D, Lambda
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras import backend as K
-
-import k2tf
 
 from jointDataset import chenColorDataset, dataSetHistogram
 import datetime
@@ -47,13 +47,14 @@ def confusion_matrix(model, testSet):
     conf /= size_matrix
     return conf
 
+if(platform.system()=="Windows"):
+    dataPrePath = r"e:\\projects\\MB\\ColorNitzan\\ATR\\"
+    outputPath = r"e:\\projects\\MB\\ColorNitzan\\TFexample\\outColorNetOutputs_30_01_20\\"
+else:
+    if(os.getlogin()=='borisef'):
+        dataPrePath = "/media/borisef/d1e28558-1377-4bbb-9e48-c8900feaf59d/ColorNitzan/ATR/"
+        outputPath = "/home/borisef/projects/cm/Output/outColorNetOutputs_08_03_20_full"
 
-dataPrePath = r"e:\\projects\\MB\\ColorNitzan\\ATR\\"
-outputPath = r"e:\\projects\\MB\\ColorNitzan\\TFexample\\outColorNetOutputs_30_01_20\\"
-
-
-dataPrePath = "/media/borisef/d1e28558-1377-4bbb-9e48-c8900feaf59d/ColorNitzan/ATR/"
-outputPath = "/media/borisef/d1e28558-1377-4bbb-9e48-c8900feaf59d/ColorNitzan/TFexample/outColorNetOutputs_08_03_20/"
 
 
 if os.path.exists(outputPath):
@@ -66,7 +67,7 @@ frozen_dir = os.path.join(outputPath,"frozen")
 model_n_ckpt_dir = os.path.join(outputPath,"model")
 ckpt_dir = os.path.join(model_n_ckpt_dir,"checkpoint")
 h5_dir = os.path.join(outputPath,"h5")
-k2tf_dir =  os.path.join(outputPath,"k2tf_dir")
+k2tf_dir = os.path.join(outputPath,"k2tf")
 
 os.mkdir(model_n_ckpt_dir)
 os.mkdir(stat_save_dir)
@@ -77,13 +78,8 @@ os.mkdir(k2tf_dir)
 
 
 
-#trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4'), gamma_correction=False)
-#
-trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4boris7colors'), gamma_correction=False)
-
-#testSet = chenColorDataset(os.path.join(dataPrePath, r'Database_with_MB/testset'), gamma_correction=False)
-testSet = chenColorDataset(r"e:/projects/MB/ColorNitzan/ATR/data_koby/test", gamma_correction=False)
-
+trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4'), gamma_correction=False)
+testSet = chenColorDataset(os.path.join(dataPrePath, r'Database_with_MB/testset'), gamma_correction=False)
 dataSetHistogram(trainSet.allData['labels'], trainSet.hotEncodeReverse, os.path.join(stat_save_dir,"hist.png"))
 
 #Model Architecture
@@ -111,11 +107,9 @@ model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accurac
 
 saver = tf.train.Saver()
 
-try:
-    with open(os.path.join(model_n_ckpt_dir,'model.pb'), 'wb') as f:
-        f.write(tf.keras.backend.get_session().graph_def.SerializeToString())
-except:
-    print("failed model n ckpt ")
+with open(os.path.join(model_n_ckpt_dir,'model.pb'), 'wb') as f:
+    f.write(tf.keras.backend.get_session().graph_def.SerializeToString())
+
 
 model.fit(trainSet.allData['images'], trainSet.allData['labels'], batch_size=256, nb_epoch=5, verbose=1)
 t0 = now()
@@ -124,25 +118,19 @@ dt = now()-t0
 print("Score: {}, evaluation time: {}, time_per_image: {}".format(test_acc, dt, dt/len(testSet.allData['labels'])))
 
 #save model
-try:
-    model.save(os.path.join(h5_dir,'color_classification_smaller_ALL_DATA.h5'))
-except:
-    print("failed h5_dir")
+model.save(os.path.join(h5_dir,'color_classification_smaller_ALL_DATA.h5'))
 
-try:
-    tf.saved_model.simple_save(tf.keras.backend.get_session(),
-                               simple_save_dir,
-                               inputs={"input": model.inputs[0]},
-                               outputs={"output": model.outputs[0]})
-except:
-    print("failed simple_save_dir")
+
+
+tf.saved_model.simple_save(tf.keras.backend.get_session(),
+                           simple_save_dir,
+                           inputs={"input": model.inputs[0]},
+                           outputs={"output": model.outputs[0]})
+
 
 
 # Saver
-try:
-    saver.save(tf.keras.backend.get_session(), os.path.join(ckpt_dir,"train.ckpt"))
-except:
-    print("failed ckpt_dir")
+saver.save(tf.keras.backend.get_session(), os.path.join(ckpt_dir,"train.ckpt"))
 
 try:
     freeze_graph.freeze_graph(None,
@@ -157,8 +145,11 @@ try:
                               "",
                               input_saved_model_dir=simple_save_dir)
 
-#save model
+except:
+    print("freeze_graph.freeze_graph FAILED")
+
 try:
+    #save model
     model.save(os.path.join(frozen_dir, 'color_classification_smaller_ALL_DATA'), save_format='tf')
 except:
     try:
@@ -172,24 +163,14 @@ print(model.inputs)
 try:
     frozen_graph1 = freezeUtils.freeze_session(K.get_session(),
                                    output_names=[out.op.name for out in model.outputs])
+except:
+    print("frozen_graph1 = freezeUtils.freeze_session...  FAILED")
 
-    # Save to ./model/tf_model.pb
+# Save to ./model/tf_model.pb
+try:
     tf.train.write_graph(frozen_graph1, "model", "tf_model.pb", as_text=False)
 except:
-    print("failed frozen_graph1")
-
-try:
-    h5file = os.path.join(frozen_dir, 'color_classification_smaller_ALL_DATA.h5')
-    args_model = h5file
-    args_num_out = 1
-    args_outdir = k2tf_dir
-    args_prefix = "k2tfout"
-    args_name = "output_graph.pb"
-    k2tf.convertGraph(args_model, args_outdir, args_num_out, args_prefix, args_name)
-except:
-    print("failed k2tf_dir")
-
-
+    print("tf.train.write_graph(frozen_graph1..  FAILED")
 
 
 try:
@@ -203,6 +184,14 @@ try:
 
 except:
     print("2tf.convertGraph  FAILED")
+
+
+
+
+
+
+
+
 
 
 
