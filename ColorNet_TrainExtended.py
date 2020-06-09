@@ -2,6 +2,7 @@ import numpy as np
 import os
 import cv2
 import shutil
+import platform
 
 import tensorflow as tf
 from tensorflow.python.tools import freeze_graph
@@ -9,53 +10,65 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Convolution2D, MaxPooling2D, Lambda
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras import backend as K
-
+from tensorflow.keras.callbacks import ModelCheckpoint
+import seaborn as sn
+import pandas as pd
+import matplotlib.pyplot as plt
+from tensorflow.keras.models import load_model
 import k2tf
 
 from jointDataset import chenColorDataset, dataSetHistogram
 import datetime
-
-import seaborn as sn
-import pandas as pd
-import matplotlib.pyplot as plt
-
+now = datetime.datetime.now
 import freezeUtils
 
-def show_conf_matr(M, outf):
-    df_cm = pd.DataFrame(M, range(len(M)),
-                         range(len(M)))
-    # plt.figure(figsize = (10,7))
-    sn.set(font_scale=1.4)  # for label size
-    sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
 
-    plt.savefig(outf)
-    plt.close()
-    #plt.show()
+# SET PARAMS
+
+TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
+TRAIN_DIR_NAME = r'Database_clean_unified_augmented4boris7colors'
+MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
+OUTPUT_DIR_NAME = "outColorNetOutputs_09_06_20/"
 
 
-now = datetime.datetime.now
+
+MINI_TRAIN = True
+EPOCHS = 150
+BS = 64
+VALID_P =0.15
+
+if(MINI_TRAIN):
+    EPOCHS = 10
+
+if(platform.system()=="Windows"):
+    dataPrePath = r"e:\\projects\\MB\\ColorNitzan\\ATR\\"
+    outputPath = r"e:\\projects\\MB\\ColorNitzan\\TFexample\\outColorNetOutputs_30_01_20\\"
+
+    trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4boris7colors'),
+                                gamma_correction=False)
+    testSet = chenColorDataset(r"e:/projects/MB/ColorNitzan/ATR/data_koby/test", gamma_correction=False)
+
+else:
+    if(os.getlogin()=='borisef'):
+        dataPrePath = "/home/borisef/projects/cm/Data/"
+        outputPath = "/home/borisef/projects/cm/Output/"
 
 
-def confusion_matrix(model, testSet):
-    hist = np.sum(testSet['labels'], axis=0)
-    size_matrix = np.repeat(hist, repeats=len(hist)).reshape(len(hist), len(hist))
-    conf = np.zeros(size_matrix.shape)
-    for idx, image in enumerate(testSet['images']):
-        prediction = model.predict_classes(testSet['images'][idx].reshape([1, 128, 128, 3]), verbose=0)[0]
-        label = np.where((testSet['labels'][idx] == 1))[0][0]
-        conf[label][prediction] += 1
-    conf /= size_matrix
-    return conf
+outputPath = os.path.join(outputPath,OUTPUT_DIR_NAME)
+if(not os.path.exists(outputPath)):
+    os.mkdir(outputPath)
 
 
-dataPrePath = r"e:\\projects\\MB\\ColorNitzan\\ATR\\"
-outputPath = r"e:\\projects\\MB\\ColorNitzan\\TFexample\\outColorNetOutputs_30_01_20\\"
+if(MINI_TRAIN):
+    trainSet = chenColorDataset(os.path.join(dataPrePath, MINI_TRAIN_DIR_NAME),                                gamma_correction=False)
+else:
+    trainSet = chenColorDataset(os.path.join(dataPrePath, TRAIN_DIR_NAME),
+                                        trainSetPercentage = 1 - VALID_P, gamma_correction=False)
 
 
-dataPrePath = "/media/borisef/d1e28558-1377-4bbb-9e48-c8900feaf59d/ColorNitzan/ATR/"
-outputPath = "/media/borisef/d1e28558-1377-4bbb-9e48-c8900feaf59d/ColorNitzan/TFexample/outColorNetOutputs_08_03_20/"
+testSet = chenColorDataset(os.path.join(dataPrePath, TEST_DIR_NAME), gamma_correction=False)
 
-
+# REMOVE OUTPUTs
 if os.path.exists(outputPath):
     shutil.rmtree(outputPath)
 os.mkdir(outputPath)
@@ -67,6 +80,7 @@ model_n_ckpt_dir = os.path.join(outputPath,"model")
 ckpt_dir = os.path.join(model_n_ckpt_dir,"checkpoint")
 h5_dir = os.path.join(outputPath,"h5")
 k2tf_dir =  os.path.join(outputPath,"k2tf_dir")
+train_ckpts_dir = "train_ckpts"
 
 os.mkdir(model_n_ckpt_dir)
 os.mkdir(stat_save_dir)
@@ -75,14 +89,9 @@ os.mkdir(frozen_dir)
 os.mkdir(h5_dir)
 os.mkdir(k2tf_dir)
 
+if(not os.path.exists(train_ckpts_dir)):
+    os.mkdir(train_ckpts_dir)
 
-
-#trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4'), gamma_correction=False)
-#
-trainSet = chenColorDataset(os.path.join(dataPrePath, r'Database_clean_unified_augmented4boris7colors'), gamma_correction=False)
-
-#testSet = chenColorDataset(os.path.join(dataPrePath, r'Database_with_MB/testset'), gamma_correction=False)
-testSet = chenColorDataset(r"e:/projects/MB/ColorNitzan/ATR/data_koby/test", gamma_correction=False)
 
 dataSetHistogram(trainSet.allData['labels'], trainSet.hotEncodeReverse, os.path.join(stat_save_dir,"hist.png"))
 
@@ -106,10 +115,14 @@ model.add(Lambda(lambda x: x, name='colors_prob'))
 
 model.summary()
 #categorical_crossentropy
-model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
 
 
 saver = tf.train.Saver()
+
+#save structure
+model.save(os.path.join(train_ckpts_dir,"color_model.h5"))
+
 
 try:
     with open(os.path.join(model_n_ckpt_dir,'model.pb'), 'wb') as f:
@@ -117,11 +130,32 @@ try:
 except:
     print("failed model n ckpt ")
 
-model.fit(trainSet.allData['images'], trainSet.allData['labels'], batch_size=256, nb_epoch=5, verbose=1)
+# checkpoint
+filepath=  train_ckpts_dir + "/" + "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+filepath_best=  train_ckpts_dir + "/" + "ckpt_best.hdf5"
+checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+callbacks_list = [checkpoint, checkpoint_best]
+
+
+
+model.fit(trainSet.trainSet['images'], trainSet.trainSet['labels'], batch_size=BS, nb_epoch=EPOCHS, verbose=0,
+          validation_data=(trainSet.testSet['images'], trainSet.testSet['labels']), callbacks=callbacks_list)
+
+#save structure
+model.save(os.path.join(train_ckpts_dir,"color_model.h5"))
+
+#load best chekpoint
+if(os.path.exists(filepath_best)):
+    model.load_weights(filepath_best)
+
+
+
 t0 = now()
 test_loss, test_acc = model.evaluate(testSet.allData['images'], testSet.allData['labels'], verbose=0)
 dt = now()-t0
 print("Score: {}, evaluation time: {}, time_per_image: {}".format(test_acc, dt, dt/len(testSet.allData['labels'])))
+
 
 #save model
 try:
@@ -156,6 +190,9 @@ try:
                               False,
                               "",
                               input_saved_model_dir=simple_save_dir)
+except:
+    print("freeze_graph.freeze_graph  FAILED")
+
 
 #save model
 try:
@@ -190,8 +227,6 @@ except:
     print("failed k2tf_dir")
 
 
-
-
 try:
     args_model = os.path.join(h5_dir,'color_classification_smaller_ALL_DATA.h5')
     args_num_out = 1
@@ -203,19 +238,3 @@ try:
 
 except:
     print("2tf.convertGraph  FAILED")
-
-
-
-
-
-#import pdb; pdb.set_trace()
-M = confusion_matrix(model, testSet.allData)
-print(M)
-show_conf_matr(M, os.path.join(stat_save_dir,"conf.png"))
-for idx, image in enumerate(testSet.allData['images']):
-    im_rs = cv2.resize(image, (360, 360))
-    prediction = model.predict_classes(testSet.allData['images'][idx].reshape([1,128,128,3]), verbose=0)
-    print("{}/{}:   {}".format(idx+1, len(testSet.allData['images']), testSet._return_label(testSet.allData['labels'][idx])))
-    cv2.imshow(testSet.hotEncodeReverse[prediction[0]], im_rs)
-    if cv2.waitKey(0) == 27:
-        cv2.destroyAllWindows()
