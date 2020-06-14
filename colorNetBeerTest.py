@@ -3,8 +3,20 @@ from jointDataset import chenColorDataset, dataSetHistogram
 from myutils import confusion_matrix, show_conf_matr
 import datetime, cv2, os
 import numpy as np
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 now = datetime.datetime.now
+
+if(platform.system()=="Windows"):
+    dataPrePath = r"e:\\projects\\MB2\\cm\\Data\\"
+    outputPath = r"e:\\projects\\MB2\\cm\\Output\\"
+
+
+else:
+    if(os.getlogin()=='borisef'):
+        dataPrePath = "/home/borisef/projects/cm/Data/"
+        outputPath = "/home/borisef/projects/cm/Output/"
+
 
 
 model_path = 'color_model.h5'
@@ -15,7 +27,9 @@ weights_path = 'color_weights.hdf5'
 model = load_model(model_path)
 model.load_weights(weights_path)
 
+test_datagen = ImageDataGenerator(rescale=1. / 255)
 testSet = chenColorDataset(r"e:/temp/test", image_format='png', image_resolution=(128,128),  gamma_correction=False)
+testSet = os.path.join(dataPrePath, TEST_DIR_NAME)
 
 t0 = now()
 test_loss, test_acc = model.evaluate(testSet.allData['images'], testSet.allData['labels'], verbose=0)

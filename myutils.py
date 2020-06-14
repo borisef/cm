@@ -54,3 +54,17 @@ def my_acc_eval(cm_model, testSet):
     return [acc, waversAcc]
 
 
+#TODO
+def dataSetHistogram(labels, hotencodeReverse, outf):
+
+    bins = np.arange(-0.5, labels.max() + 1.5, 1)  # fixed bin size
+
+    plt.xlim([-0.5, labels.max() + 1])
+
+    plt.hist(labels, bins=bins, alpha=0.5)
+    plt.title('hist')
+    plt.xlabel('label')
+    plt.ylabel('count')
+    plt.xticks(ticks=np.arange(0, labels.max()+1), labels=["black", "blue", "gray","green",  "red","white", "yellow" ])
+    plt.savefig(outf)
+    plt.close()

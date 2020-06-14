@@ -129,13 +129,44 @@ def beer_net(num_classes):
     return model
 
 
+def mnist_net(num_classes):
+    # placeholder for input image
+    input_image = Input(shape=(128, 128, 3))
+    # Model Architecture
+    model = Sequential()
+    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(128, 128, 3)))
+    model.add(BatchNormalization())
+    model.add(Convolution2D(16, 3, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+    model.add(BatchNormalization())
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(BatchNormalization())
+    # model.add(Dense(128, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(BatchNormalization())
+    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Lambda(lambda x: x, name='colors_prob'))
+
+    model.summary()
+    # categorical_crossentropy
+    model.compile(loss='categorical_crossentropy', optimizer='Adagrad', metrics=['accuracy'])
+    return model
+
+#============================================
+
+
 img_rows, img_cols = 128, 128
 num_classes = 7
-batch_size = 4
+batch_size = 32
 nb_epoch = 100
 
 # initialise model
-model = beer_net(num_classes)
+#model = beer_net(num_classes)
+model = mnist_net(num_classes)
+
 
 filepath = 'color_weights.hdf5'
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
@@ -149,12 +180,12 @@ train_datagen = ImageDataGenerator(
 test_datagen = ImageDataGenerator(rescale=1. / 255)
 
 training_set = train_datagen.flow_from_directory(
-    'e:/temp/test/',
+    'e:/projects/MB2/cm/Data/Database_clean_unified_augmented4boris7colors/',
     target_size=(img_rows, img_cols),
     batch_size=batch_size,
     class_mode='categorical')
 test_set = test_datagen.flow_from_directory(
-    'e:/temp/test/',
+    'e:/projects/MB2/cm/Data/debugTilesSorted/',
     target_size=(img_rows, img_cols),
     batch_size=batch_size,
     class_mode='categorical')

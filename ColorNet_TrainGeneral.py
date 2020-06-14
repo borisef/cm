@@ -16,31 +16,35 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 import k2tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 from jointDataset import chenColorDataset, dataSetHistogram
 import datetime
 now = datetime.datetime.now
 import freezeUtils
+import ColorNets
+import myutils
 
+hotEncode = {'white': 0, 'black': 1, 'gray': 2, 'red': 3, 'green': 4, 'blue': 5,
+                          'yellow': 6, 'cyan': 5}
+hotEncodeReverse = {0: 'white', 1: 'black', 2: 'gray', 3: 'red', 4: 'green', 5: 'blue',
+                                 6: 'yellow'}
 
-# SET PARAMS
-
-TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
+#TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "debugTilesSorted"
-TRAIN_DIR_NAME = r'Database_clean_unified_augmented4boris7colors'
+TRAIN_DIR_NAME = "debugTilesSorted" #r'Database_clean_unified_augmented4boris7colors'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_09_06_20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_14_06_20/"
 LOAD_FROM_CKPT = None #"train_ckpts/ckpt_best.hdf5"
 
-
-
+img_rows, img_cols = 128, 128
+num_classes = 7
+batch_size = 8
+nb_epoch = 550
 MINI_TRAIN = False # debug
-EPOCHS = 150
-BS = 32
-VALID_P =0.15
 
 if(MINI_TRAIN):
-    EPOCHS = 10
+    nb_epoch = 3
 
 if(platform.system()=="Windows"):
     dataPrePath = r"e:\\projects\\MB2\\cm\\Data\\"
@@ -58,14 +62,37 @@ if(not os.path.exists(outputPath)):
     os.mkdir(outputPath)
 
 
+# train_datagen = ImageDataGenerator(
+#     rescale=1. / 255,
+#     shear_range=0.2,
+#     zoom_range=0.3,
+#     horizontal_flip=True)
+train_datagen = ImageDataGenerator(
+    rescale=1. / 255)
+test_datagen = ImageDataGenerator(rescale=1. / 255)
+
+
+
 if(MINI_TRAIN):
-    trainSet = chenColorDataset(os.path.join(dataPrePath, MINI_TRAIN_DIR_NAME), gamma_correction=False)
+    trainSet = os.path.join(dataPrePath, MINI_TRAIN_DIR_NAME)
 else:
-    trainSet = chenColorDataset(os.path.join(dataPrePath, TRAIN_DIR_NAME),
-                                        trainSetPercentage = 1 - VALID_P, gamma_correction=False)
+    trainSet = os.path.join(dataPrePath, TRAIN_DIR_NAME)
+
+testSet = os.path.join(dataPrePath, TEST_DIR_NAME)
 
 
-testSet = chenColorDataset(os.path.join(dataPrePath, TEST_DIR_NAME), gamma_correction=False)
+training_set = train_datagen.flow_from_directory(
+    trainSet,
+    target_size=(img_rows, img_cols),
+    batch_size=batch_size,
+    class_mode='categorical')
+
+test_set = test_datagen.flow_from_directory(
+    testSet,
+    target_size=(img_rows, img_cols),
+    batch_size=batch_size,
+    class_mode='categorical')
+
 
 # REMOVE OUTPUTs
 if os.path.exists(outputPath):
@@ -91,31 +118,9 @@ os.mkdir(k2tf_dir)
 if(not os.path.exists(train_ckpts_dir)):
     os.mkdir(train_ckpts_dir)
 
+myutils.dataSetHistogram(training_set.labels, hotEncodeReverse, os.path.join(stat_save_dir,"hist.png"))
 
-dataSetHistogram(trainSet.allData['labels'], trainSet.hotEncodeReverse, os.path.join(stat_save_dir,"hist.png"))
-
-#Model Architecture
-model = Sequential()
-model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(128, 128, 3)))
-model.add(BatchNormalization())
-model.add(Convolution2D(16, 3, 3, activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-model.add(BatchNormalization())
-model.add(Flatten())
-model.add(Dense(64, activation='relu'))
-model.add(Dropout(0.5))
-model.add(BatchNormalization())
-# model.add(Dense(128, activation='relu'))
-# model.add(Dropout(0.5))
-# model.add(BatchNormalization())
-model.add(Dense(len(trainSet.hotEncodeReverse), activation='softmax'))
-model.add(Lambda(lambda x: x, name='colors_prob'))
-
-model.summary()
-#categorical_crossentropy
-model.compile(loss='categorical_crossentropy', optimizer='Adagrad', metrics=['accuracy'])
-
+model = ColorNets.mnist_net(num_classes)
 
 saver = tf.train.Saver()
 
@@ -139,22 +144,31 @@ callbacks_list = [checkpoint, checkpoint_best]
 if(LOAD_FROM_CKPT is not None):
     model.load_weights(LOAD_FROM_CKPT)
 
-model.fit(trainSet.allData['images'], trainSet.allData['labels'], batch_size=BS, nb_epoch=EPOCHS, verbose=0,
-          validation_data=(testSet.allData['images'], testSet.allData['labels']), callbacks=callbacks_list)
+# model.fit(trainSet.allData['images'], trainSet.allData['labels'], batch_size=BS, nb_epoch=EPOCHS, verbose=0,
+#           validation_data=(testSet.allData['images'], testSet.allData['labels']), callbacks=callbacks_list)
+
+model.fit_generator(training_set,
+    #steps_per_epoch=100,
+    epochs=nb_epoch,
+    validation_data=test_set,
+    validation_steps= 1,
+    callbacks=callbacks_list)
+
 
 #save structure
 model.save(os.path.join(train_ckpts_dir,"color_model.h5"))
 
 #load best chekpoint
-if(os.path.exists(filepath_best)):
-    model.load_weights(filepath_best)
+# if(os.path.exists(filepath_best)):
+#     model.load_weights(filepath_best)
 
 
 
 t0 = now()
-test_loss, test_acc = model.evaluate(testSet.allData['images'], testSet.allData['labels'], verbose=0)
+#test_loss, test_acc = model.evaluate(testSet.allData['images'], testSet.allData['labels'], verbose=0)
+test_loss, test_acc = model.evaluate_generator(test_set)
 dt = now()-t0
-print("Score: {}, evaluation time: {}, time_per_image: {}".format(test_acc, dt, dt/len(testSet.allData['labels'])))
+print("Score: {}, evaluation time: {}, time_per_image: {}".format(test_acc, dt, dt/len(test_set.labels)))
 
 
 #save model
