@@ -2,8 +2,9 @@ import numpy as np
 import seaborn as sn
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report, confusion_matrix
 
-def confusion_matrix(model, testSet):
+def confusion_matrix1(model, testSet):
     hist = np.sum(testSet['labels'], axis=0)
     size_matrix = np.repeat(hist, repeats=len(hist)).reshape(len(hist), len(hist))
     conf = np.zeros(size_matrix.shape)
@@ -53,9 +54,39 @@ def my_acc_eval(cm_model, testSet):
 
     return [acc, waversAcc]
 
+def my_acc_eval_from_datagen(cm_model, test_set):
+    test_set.reset()
+    Y_pred = cm_model.predict_generator(test_set)
+    y_pred = np.argmax(Y_pred, axis=1)
+    true_labels_ind = test_set.classes # one hot encoded
+
+    waversAcc = np.zeros(max(test_set.classes)+1)
+    acc = np.zeros(max(test_set.classes) + 1)
+    hist = np.zeros(max(test_set.classes) + 1)
+
+    for ind, labl in enumerate(true_labels_ind):
+        p = y_pred[ind]
+
+        acc[labl] = acc[labl] + (labl == p)
+        hist[labl]=hist[labl]+1
+        if(true_labels_ind[ind] == 0): # white
+            waversAcc[labl] = waversAcc[labl] + (p == 0) + (p == 2)
+        elif (true_labels_ind[ind] == 1):  # black
+                waversAcc[labl] = waversAcc[labl] + (p == 1) + (p == 2)
+        elif (true_labels_ind[ind] == 2):  # gray
+            waversAcc[labl] = waversAcc[labl] + (p == 0) + (p == 1) + (p == 2)
+        else:
+            waversAcc[labl] = waversAcc[labl] + (true_labels_ind[ind] == p)
+
+
+    acc = acc/(hist+0.001)
+    waversAcc = waversAcc / (hist+0.00001)
+
+    return [acc, waversAcc]
+
 
 #TODO
-def dataSetHistogram(labels, hotencodeReverse, outf):
+def dataSetHistogram(labels, orderedLabels, outf):
 
     bins = np.arange(-0.5, labels.max() + 1.5, 1)  # fixed bin size
 
@@ -65,6 +96,24 @@ def dataSetHistogram(labels, hotencodeReverse, outf):
     plt.title('hist')
     plt.xlabel('label')
     plt.ylabel('count')
-    plt.xticks(ticks=np.arange(0, labels.max()+1), labels=["black", "blue", "gray","green",  "red","white", "yellow" ])
+    plt.xticks(ticks=np.arange(0, labels.max()+1), labels=orderedLabels)
     plt.savefig(outf)
     plt.close()
+
+
+def confusion_matrix_from_datagen(model, test_set):
+    # Confution Matrix and Classification Report
+    num_of_test_samples = len(test_set.classes)
+    batch_size=32
+    test_set.reset()  # resetting generator
+    Y_pred = model.predict_generator(test_set, num_of_test_samples // batch_size+1)
+    y_pred = np.argmax(Y_pred, axis=1)
+    print('Confusion Matrix')
+    M = confusion_matrix(test_set.classes, y_pred)
+    print(M)
+    print('Classification Report')
+    target_names = ["black", "blue", "gray","green",  "red","white", "yellow" ]
+    print(classification_report(test_set.classes, y_pred, target_names=target_names))
+    row_sums = M.sum(axis=1)
+    new_matrix = M / row_sums[:, np.newaxis]
+    return new_matrix

@@ -21,19 +21,15 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 import k2tf
 
-#from jointDataset import chenColorDataset, dataSetHistogram
 import datetime
 now = datetime.datetime.now
 
-
-#import freezeUtils
-
-from myutils import confusion_matrix
 from myutils import show_conf_matr
-from myutils import my_acc_eval
+from myutils import confusion_matrix_from_datagen, my_acc_eval_from_datagen
 
 # SET PARAMS
 
+TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
 TEST_DIR_NAME = "debugTilesSorted"
 OUTPUT_DIR_NAME = "outColorNetOutputs_15_06_20/"
 train_ckpts_dir = "train_ckpts"
@@ -58,8 +54,10 @@ testSet = os.path.join(dataPrePath, TEST_DIR_NAME)
 test_datagen = ImageDataGenerator(rescale=1. / 255)
 test_set = test_datagen.flow_from_directory(
     testSet,
+    batch_size=32,
     target_size=(img_rows, img_cols),
-    class_mode='categorical')
+    class_mode='categorical',
+    shuffle=False)
 
 if(not os.path.exists(outputPath)):
     os.mkdir(outputPath)
@@ -82,7 +80,6 @@ if(os.path.exists(weights_path)):
 
 
 t0 = now()
-#test_loss, test_acc = model.evaluate(testSet.allData['images'], testSet.allData['labels'], verbose=0)
 test_loss, test_acc = model.evaluate_generator(test_set)
 dt = now()-t0
 print("Score: {}, evaluation time: {}, time_per_image: {}".format(test_acc, dt, dt/len(test_set.labels)))
@@ -90,17 +87,17 @@ print("Score: {}, evaluation time: {}, time_per_image: {}".format(test_acc, dt, 
 
 
 
-#M = confusion_matrix(model, testSet.allData)
-#[myAcc, myWacc] = my_acc_eval(model, testSet.allData)
-# print(M)
-# show_conf_matr(M, os.path.join(stat_save_dir,"conf.png"))
+M = confusion_matrix_from_datagen(model, test_set)
+[myAcc, myWacc] = my_acc_eval_from_datagen(model, test_set)
+print(M)
+show_conf_matr(M, os.path.join(stat_save_dir,"conf.png"))
 #
-# print("*******************")
-# print(myAcc)
-# print(myWacc)
-# print(np.mean(myAcc))
-# print(np.mean(myWacc))
-# print("*******************")
+print("*******************")
+print(myAcc)
+print(myWacc)
+print(np.mean(myAcc))
+print(np.mean(myWacc))
+print("*******************")
 
 hotEncodeReverse = {5: 'white',0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: 'blue',
                                  6: 'yellow'}
@@ -117,7 +114,7 @@ for idx, imname in enumerate(test_set.filepaths):
     prediction = model.predict(imagef.reshape([1,128,128,3]), verbose=0)
     trueL = test_set.labels[idx]
     pL = np.argmax(prediction)
-    #print("{}/{}:   {}".format(idx + 1, len(testSet.allData['images']), trueL))
+
     cv2.imshow(hotEncodeReverse[pL] + ", " + hotEncodeReverse[trueL], im_rs)
     if cv2.waitKey(0) == 27:
         cv2.destroyAllWindows()
