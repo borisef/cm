@@ -28,16 +28,17 @@ import myutils
 abcLabels = ["black", "blue", "gray","green",  "red","white", "yellow" ]
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-#TEST_DIR_NAME = "debugTilesSorted"
-TRAIN_DIR_NAME = r'Database_clean_unified_augmented4boris7colors'
+TEST_DIR_NAME = "UnifiedTest"
+TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
 OUTPUT_DIR_NAME = "outColorNetOutputs_15_06_20/"
 LOAD_FROM_CKPT = None #"train_ckpts/ckpt_best.hdf5"
+train_ckpts_dir = "train_ckpts"
 
 img_rows, img_cols = 128, 128
 num_classes = 7
-batch_size = 32
-nb_epoch = 500
+batch_size = 64
+nb_epoch = 200
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -106,7 +107,7 @@ model_n_ckpt_dir = os.path.join(outputPath,"model")
 ckpt_dir = os.path.join(model_n_ckpt_dir,"checkpoint")
 h5_dir = os.path.join(outputPath,"h5")
 k2tf_dir =  os.path.join(outputPath,"k2tf_dir")
-train_ckpts_dir = "train_ckpts"
+#train_ckpts_dir = "train_ckpts"
 
 os.mkdir(model_n_ckpt_dir)
 os.mkdir(stat_save_dir)
