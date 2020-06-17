@@ -31,14 +31,17 @@ TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_15_06_20/"
-LOAD_FROM_CKPT = None #"train_ckpts/ckpt_best.hdf5"
+OUTPUT_DIR_NAME = "outColorNetOutputs_17_06_20/"
+
+LOAD_FROM_CKPT =  None#"train_ckpts/ckpt_best.hdf5"
+MODEL_LOAD_FROM_CKPT = "train_ckpts/color_model.h5"
+
 train_ckpts_dir = "train_ckpts"
 
 img_rows, img_cols = 128, 128
 num_classes = 7
-batch_size = 64
-nb_epoch = 200
+batch_size = 32
+nb_epoch = 10
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -66,6 +69,7 @@ if(not os.path.exists(outputPath)):
 #     shear_range=0.2,
 #     zoom_range=0.3,
 #     horizontal_flip=True)
+
 train_datagen = ImageDataGenerator(
     rescale=1. / 255)
 
@@ -121,8 +125,11 @@ if(not os.path.exists(train_ckpts_dir)):
 
 myutils.dataSetHistogram(training_set.labels, abcLabels, os.path.join(stat_save_dir,"hist.png"))
 
-#model = ColorNets.mnist_net(num_classes)
-model = ColorNets.beer_net(num_classes)
+if(LOAD_FROM_CKPT is not None):
+    model = load_model("train_ckpts/ckpt_best.hdf5")
+else:
+    #model = ColorNets.mnist_net(num_classes)
+    model = ColorNets.beer_net(num_classes)
 
 saver = tf.train.Saver()
 
@@ -143,8 +150,6 @@ checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_o
 checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint, checkpoint_best]
 
-if(LOAD_FROM_CKPT is not None):
-    model.load_weights(LOAD_FROM_CKPT)
 
 
 model.fit_generator(training_set,

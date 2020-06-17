@@ -3,6 +3,8 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.optimizers import Adam
+#from tensorflow.keras.optimizers import RMSprop
+
 from tensorflow.keras.layers import BatchNormalization, Lambda, Input, Dense, Convolution2D, MaxPooling2D, AveragePooling2D, \
     ZeroPadding2D, Dropout, Flatten,  Reshape, Activation
 from tensorflow.keras.layers import Concatenate
@@ -31,6 +33,7 @@ def mnist_net(num_classes):
     model.summary()
     # categorical_crossentropy
     sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+    adam = Adam(lr=1e-4)
     model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics=['accuracy'])
     return model
 
@@ -150,7 +153,7 @@ def beer_net(num_classes):
     model = Model(inputs=input_image, outputs=output)
     sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
     #sgd = SGD(lr=0.01, momentum=0.9, decay=0.0005, nesterov=True)
-    opt = Adam(learning_rate=0.01)
+    opt = Adam(lr=0.01)
     model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
