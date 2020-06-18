@@ -31,17 +31,18 @@ abcLabels = ["black", "blue", "gray","green",  "red","white", "yellow" ]
 TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_17_06_20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_18_06_20/"
 
-LOAD_FROM_CKPT =  None#"train_ckpts/ckpt_best.hdf5"
+LOAD_FROM_CKPT =  None
+#LOAD_FROM_CKPT =  "train_ckpts/ckpt_best.hdf5"
 MODEL_LOAD_FROM_CKPT = "train_ckpts/color_model.h5"
 
 train_ckpts_dir = "train_ckpts"
 
 img_rows, img_cols = 128, 128
 num_classes = 7
-batch_size = 64
-nb_epoch = 500
+batch_size = 32
+nb_epoch = 50
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 

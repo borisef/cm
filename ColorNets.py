@@ -1,7 +1,8 @@
 import tensorflow as tf
+import random
 
 from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.optimizers import SGD, RMSprop, Adagrad, Nadam
 from tensorflow.keras.optimizers import Adam
 #from tensorflow.keras.optimizers import RMSprop
 
@@ -9,6 +10,25 @@ from tensorflow.keras.layers import BatchNormalization, Lambda, Input, Dense, Co
     ZeroPadding2D, Dropout, Flatten,  Reshape, Activation
 from tensorflow.keras.layers import Concatenate
 
+def optimizors(random_optimizor):
+    if random_optimizor:
+        i = random.randint(0,4)
+        if i==0:
+            opt = SGD()
+        elif i==1:
+            opt= RMSprop()
+        elif i==2:
+            opt= Adagrad()
+        elif i==3:
+            opt = Adam()
+        elif i==4:
+            opt =Nadam()
+        print(opt)
+    else:
+        opt= Adam()
+    print(opt)
+    print(i)
+    return opt
 
 
 def mnist_net(num_classes):
@@ -32,9 +52,11 @@ def mnist_net(num_classes):
 
     model.summary()
     # categorical_crossentropy
-    sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.7, nesterov=True)
     adam = Adam(lr=1e-4)
-    model.compile(loss='categorical_crossentropy', optimizer = sgd, metrics=['accuracy'])
+    opt = optimizors(True)
+    model.compile(loss='categorical_crossentropy', optimizer = opt, metrics=['accuracy'])
+
     return model
 
 
@@ -155,7 +177,7 @@ def beer_net(num_classes):
     #sgd = SGD(lr=0.01, momentum=0.9, decay=0.0005, nesterov=True)
     opt = Adam(lr=0.01)
     model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
-
+    model.summary()
     return model
 
 def VGG_net(num_classes):
@@ -187,4 +209,5 @@ def VGG_net(num_classes):
     # compile model
     opt = SGD(lr=0.001, momentum=0.9)
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
     return model
