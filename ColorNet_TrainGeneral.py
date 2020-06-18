@@ -27,7 +27,7 @@ import myutils
 
 abcLabels = ["black", "blue", "gray","green",  "red","white", "yellow" ]
 
-TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
+#TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
@@ -40,8 +40,8 @@ train_ckpts_dir = "train_ckpts"
 
 img_rows, img_cols = 128, 128
 num_classes = 7
-batch_size = 32
-nb_epoch = 10
+batch_size = 64
+nb_epoch = 500
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -71,9 +71,19 @@ if(not os.path.exists(outputPath)):
 #     horizontal_flip=True)
 
 train_datagen = ImageDataGenerator(
-    rescale=1. / 255)
+    rescale=1. / 255,
+    # horizontal_flip=True,
+    # vertical_flip=True,
+    # width_shift_range=[-0.025,0.025],
+    # height_shift_range=[-0.025,0.025],
+    # brightness_range=[0.85,1.15],
+    preprocessing_function=myutils.numpyRGB2BGR
+)
 
-test_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator(
+    rescale=1. / 255,
+    preprocessing_function=myutils.numpyRGB2BGR
+)
 
 
 
@@ -128,8 +138,9 @@ myutils.dataSetHistogram(training_set.labels, abcLabels, os.path.join(stat_save_
 if(LOAD_FROM_CKPT is not None):
     model = load_model("train_ckpts/ckpt_best.hdf5")
 else:
-    #model = ColorNets.mnist_net(num_classes)
-    model = ColorNets.beer_net(num_classes)
+    model = ColorNets.mnist_net(num_classes)
+    #model = ColorNets.beer_net(num_classes)
+    #model = ColorNets.VGG_net(num_classes)
 
 saver = tf.train.Saver()
 

@@ -16,6 +16,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import myutils
 
 
 
@@ -51,7 +52,10 @@ elif(os.getlogin()=='borisef'):
 
 outputPath = os.path.join(outputPath,OUTPUT_DIR_NAME)
 testSet = os.path.join(dataPrePath, TEST_DIR_NAME)
-test_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator(
+    rescale=1. / 255,
+    preprocessing_function=myutils.numpyRGB2BGR
+)
 test_set = test_datagen.flow_from_directory(
     testSet,
     batch_size=32,
@@ -105,7 +109,7 @@ hotEncodeReverse = {5: 'white',0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: '
 for idx, imname in enumerate(test_set.filepaths):
     image = cv2.imread(imname)
     im_rs = cv2.resize(image, (360, 360))
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     imagef = cv2.resize(image.astype(float), (128, 128))
 
 

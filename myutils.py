@@ -4,6 +4,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix
 
+def numpyRGB2BGR(rgb):
+    bgr = rgb[..., ::-1].copy()
+
+    return bgr
+
+
 def confusion_matrix1(model, testSet):
     hist = np.sum(testSet['labels'], axis=0)
     size_matrix = np.repeat(hist, repeats=len(hist)).reshape(len(hist), len(hist))

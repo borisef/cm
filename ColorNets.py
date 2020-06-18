@@ -157,3 +157,34 @@ def beer_net(num_classes):
     model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
+
+def VGG_net(num_classes):
+    model = Sequential()
+    model.add(Convolution2D(16, 3, 3, activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(128, 128, 3)))
+
+    model.add(BatchNormalization())
+    model.add(Convolution2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+    model.add(Convolution2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Convolution2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.3))
+    model.add(Convolution2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(BatchNormalization())
+    model.add(Convolution2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(BatchNormalization())
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.4))
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    model.add(Dense(num_classes, activation='softmax'))
+    # compile model
+    opt = SGD(lr=0.001, momentum=0.9)
+    model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
