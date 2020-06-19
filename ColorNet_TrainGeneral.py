@@ -33,6 +33,7 @@ TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
 OUTPUT_DIR_NAME = "outColorNetOutputs_19_06_20/"
 LOAD_FROM_CKPT = None
+#LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_19_06_20/train_ckpts/color_model.hdf5"
 
 
 img_rows, img_cols = 128, 128

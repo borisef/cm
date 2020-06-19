@@ -18,7 +18,10 @@ def display_annotated_db(test_set, model, hotEncodeReverse):
         predL = np.argmax(prediction)
 
         print("{}/{}:   {}".format(idx + 1, test_set.labels.size, hotEncodeReverse[trueL]))
-        cv2.imshow("GT: " + hotEncodeReverse[trueL] + ", prediction: " + hotEncodeReverse[predL], im_rs)
+        strRes = "Correct !"
+        if(trueL!=predL):
+            strRes = "Wrong !"
+        cv2.imshow(strRes + ". GT: " + hotEncodeReverse[trueL] + ", prediction: " + hotEncodeReverse[predL], im_rs)
         if cv2.waitKey(0) == 27:
             cv2.destroyAllWindows()
 
