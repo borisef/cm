@@ -1,10 +1,44 @@
+import os
+import cv2
 import numpy as np
 import seaborn as sn
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
-def confusion_matrix1(model, testSet):
+def display_annotated_db(test_set, model, hotEncodeReverse):
+    for idx, img_name in enumerate(test_set.filepaths):
+        image = cv2.imread(img_name)
+        im_rs = cv2.resize(image, (360, 360))
+        imagef = cv2.resize(image.astype(float), (128, 128)) / 255.0
+
+        prediction = model.predict(imagef.reshape([1, 128, 128, 3]), verbose=0)
+        trueL = test_set.labels[idx]
+        predL = np.argmax(prediction)
+
+        print("{}/{}:   {}".format(idx + 1, test_set.labels.size, hotEncodeReverse[trueL]))
+        cv2.imshow("GT: " + hotEncodeReverse[trueL] + ", prediction: " + hotEncodeReverse[predL], im_rs)
+        if cv2.waitKey(0) == 27:
+            cv2.destroyAllWindows()
+
+
+def make_folder(directory):
+    """
+    Make folder if it doesn't already exist
+    :param directory: The folder destination path
+    """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
+def numpyRGB2BGR(rgb):
+    bgr = rgb[..., ::-1].copy()
+
+    return bgr
+
+
+def confusion_matrix(model, testSet):
     hist = np.sum(testSet['labels'], axis=0)
     size_matrix = np.repeat(hist, repeats=len(hist)).reshape(len(hist), len(hist))
     conf = np.zeros(size_matrix.shape)
@@ -17,15 +51,12 @@ def confusion_matrix1(model, testSet):
 
 
 def show_conf_matr(M, outf):
-    df_cm = pd.DataFrame(M, range(len(M)),
-                         range(len(M)))
-    # plt.figure(figsize = (10,7))
+    df_cm = pd.DataFrame(M, range(len(M)), range(len(M)))
     sn.set(font_scale=1.4)  # for label size
     sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
 
     plt.savefig(outf)
     plt.close()
-    #plt.show()
 
 
 def my_acc_eval(cm_model, testSet):
@@ -53,6 +84,7 @@ def my_acc_eval(cm_model, testSet):
     waversAcc = waversAcc / (hist+0.001)
 
     return [acc, waversAcc]
+
 
 def my_acc_eval_from_datagen(cm_model, test_set):
     test_set.reset()
@@ -109,10 +141,10 @@ def confusion_matrix_from_datagen(model, test_set):
     Y_pred = model.predict_generator(test_set, num_of_test_samples // batch_size+1)
     y_pred = np.argmax(Y_pred, axis=1)
     print('Confusion Matrix')
-    M = confusion_matrix(test_set.classes, y_pred)
+    M = sklearn_confusion_matrix(test_set.classes, y_pred)
     print(M)
     print('Classification Report')
-    target_names = ["black", "blue", "gray","green",  "red","white", "yellow" ]
+    target_names = ["black", "blue", "gray", "green",  "red", "white", "yellow"]
     print(classification_report(test_set.classes, y_pred, target_names=target_names))
     row_sums = M.sum(axis=1)
     new_matrix = M / row_sums[:, np.newaxis]

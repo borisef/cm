@@ -27,21 +27,18 @@ import myutils
 
 abcLabels = ["black", "blue", "gray","green",  "red","white", "yellow" ]
 
-TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
+#TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_17_06_20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_19_06_20/"
+LOAD_FROM_CKPT = None
 
-LOAD_FROM_CKPT =  None#"train_ckpts/ckpt_best.hdf5"
-MODEL_LOAD_FROM_CKPT = "train_ckpts/color_model.h5"
-
-train_ckpts_dir = "train_ckpts"
 
 img_rows, img_cols = 128, 128
 num_classes = 7
 batch_size = 32
-nb_epoch = 10
+nb_epoch = 50
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -51,8 +48,6 @@ if(MINI_TRAIN):
 if(platform.system()=="Windows"):
     dataPrePath = r"e:\\projects\\MB2\\cm\\Data\\"
     outputPath = r"e:\\projects\\MB2\\cm\\Output\\"
-
-
 else:
     if(os.getlogin()=='borisef'):
         dataPrePath = "/home/borisef/projects/cm/Data/"
@@ -60,21 +55,23 @@ else:
 
 
 outputPath = os.path.join(outputPath,OUTPUT_DIR_NAME)
-if(not os.path.exists(outputPath)):
-    os.mkdir(outputPath)
+myutils.make_folder(outputPath)
 
-
-# train_datagen = ImageDataGenerator(
-#     rescale=1. / 255,
-#     shear_range=0.2,
-#     zoom_range=0.3,
-#     horizontal_flip=True)
 
 train_datagen = ImageDataGenerator(
-    rescale=1. / 255)
+    rescale=1. / 255,
+    # horizontal_flip=True,
+    # vertical_flip=True,
+    # width_shift_range=[-0.025,0.025],
+    # height_shift_range=[-0.025,0.025],
+    # brightness_range=[0.85,1.15],
+    preprocessing_function=myutils.numpyRGB2BGR
+)
 
-test_datagen = ImageDataGenerator(rescale=1. / 255)
-
+test_datagen = ImageDataGenerator(
+    rescale=1. / 255,
+    preprocessing_function=myutils.numpyRGB2BGR
+)
 
 
 if(MINI_TRAIN):
@@ -99,37 +96,38 @@ test_set = test_datagen.flow_from_directory(
 
 
 # REMOVE OUTPUTs
-if os.path.exists(outputPath):
-    shutil.rmtree(outputPath)
+# if os.path.exists(outputPath):
+#     shutil.rmtree(outputPath)
 
-os.mkdir(outputPath)
+myutils.make_folder(outputPath)
 
-stat_save_dir = os.path.join(outputPath,"stat")
+stat_save_dir = os.path.join(outputPath,"statistics")
 simple_save_dir = os.path.join(outputPath,"simpleSave")
 frozen_dir = os.path.join(outputPath,"frozen")
 model_n_ckpt_dir = os.path.join(outputPath,"model")
 ckpt_dir = os.path.join(model_n_ckpt_dir,"checkpoint")
 h5_dir = os.path.join(outputPath,"h5")
 k2tf_dir =  os.path.join(outputPath,"k2tf_dir")
-#train_ckpts_dir = "train_ckpts"
+train_ckpts_dir = os.path.join(outputPath,"train_ckpts")
 
-os.mkdir(model_n_ckpt_dir)
-os.mkdir(stat_save_dir)
-os.mkdir(ckpt_dir)
-os.mkdir(frozen_dir)
-os.mkdir(h5_dir)
-os.mkdir(k2tf_dir)
 
-if(not os.path.exists(train_ckpts_dir)):
-    os.mkdir(train_ckpts_dir)
+myutils.make_folder(stat_save_dir)
+myutils.make_folder(simple_save_dir)
+myutils.make_folder(frozen_dir)
+myutils.make_folder(model_n_ckpt_dir)
+myutils.make_folder(ckpt_dir)
+myutils.make_folder(h5_dir)
+myutils.make_folder(k2tf_dir)
+myutils.make_folder(train_ckpts_dir)
 
 myutils.dataSetHistogram(training_set.labels, abcLabels, os.path.join(stat_save_dir,"hist.png"))
 
 if(LOAD_FROM_CKPT is not None):
-    model = load_model("train_ckpts/ckpt_best.hdf5")
+    model = load_model(LOAD_FROM_CKPT)
 else:
-    #model = ColorNets.mnist_net(num_classes)
-    model = ColorNets.beer_net(num_classes)
+    model = ColorNets.mnist_net(num_classes)
+    #model = ColorNets.beer_net(num_classes)
+    #model = ColorNets.VGG_net(num_classes)
 
 saver = tf.train.Saver()
 
@@ -167,9 +165,6 @@ if(SAVE_BEST and os.path.exists(filepath_best)):
 
 #save structure and best weights
 model.save(os.path.join(train_ckpts_dir,"color_model.h5"))
-
-
-
 
 
 t0 = now()
