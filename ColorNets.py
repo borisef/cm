@@ -208,6 +208,7 @@ def VGG_net(num_classes):
     model.add(Dense(num_classes, activation='softmax'))
     # compile model
     opt = SGD(lr=0.001, momentum=0.9)
+    opt = RMSprop()
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
     return model
