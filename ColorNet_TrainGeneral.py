@@ -39,7 +39,7 @@ LOAD_FROM_CKPT = None
 img_rows, img_cols = 128, 128
 num_classes = 7
 batch_size = 32
-nb_epoch = 50
+nb_epoch = 20
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -66,7 +66,8 @@ train_datagen = ImageDataGenerator(
     # width_shift_range=[-0.025,0.025],
     # height_shift_range=[-0.025,0.025],
     # brightness_range=[0.85,1.15],
-    preprocessing_function=myutils.numpyRGB2BGR
+    preprocessing_function=myutils.numpyRGB2BGR,
+    validation_split=0.0
 )
 
 test_datagen = ImageDataGenerator(
@@ -87,12 +88,13 @@ training_set = train_datagen.flow_from_directory(
     trainSet,
     target_size=(img_rows, img_cols),
     batch_size=batch_size,
-    class_mode='categorical')
+    class_mode='categorical',
+    subset = "training")
 
 test_set = test_datagen.flow_from_directory(
     testSet,
     target_size=(img_rows, img_cols),
-    batch_size=batch_size,
+    batch_size=batch_size*4,
     class_mode='categorical')
 
 

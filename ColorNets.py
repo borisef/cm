@@ -51,11 +51,11 @@ def mnist_net(num_classes):
     model.add(Lambda(lambda x: x, name='colors_prob'))
 
     model.summary()
-    # categorical_crossentropy
+    # 'categorical_crossentropy'
     sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.7, nesterov=True)
     adam = Adam(lr=1e-4)
     opt = optimizors(random_optimizor=True)
-    model.compile(loss='categorical_crossentropy', optimizer = opt, metrics=['accuracy'])
+    model.compile(loss='categorical_crossentropy', optimizer = RMSprop(), metrics=['accuracy'])
 
     return model
 
