@@ -26,7 +26,7 @@ import myutils
 
 
 abcLabels = ["black", "blue", "gray","green",  "red", "white", "yellow" ]
-class_weight = {0: 0.9, 1: 1.3,  2: 0.6,  3: 1.2,   4 :1.0,  5:0.85,    6:1.0}
+class_weight = {0: 1.0, 1: 1.95,  2: 0.8,  3: 1.5,   4 :1.0,  5:0.85,    6:1.0}
 
 #TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "UnifiedTest"
@@ -40,7 +40,7 @@ LOAD_FROM_CKPT = None
 img_rows, img_cols = 128, 128
 num_classes = 7
 batch_size = 32
-nb_epoch = 120
+nb_epoch = 220
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 

@@ -22,7 +22,7 @@ from myutils import confusion_matrix_from_datagen, my_acc_eval_from_datagen
 # SET PARAMS
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
-TEST_DIR_NAME = "UnifiedTest"
+TEST_DIR_NAME = "UnifiedTest" #"tiles" #
 OUTPUT_DIR_NAME = "outColorNetOutputs_19_06_20/"
 train_ckpts_dir = "train_ckpts"
 model_name = 'color_model.h5'
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         dataPrePath = r"e:\\projects\\MB2\\cm\\Data\\"
         outputPath = r"e:\\projects\\MB2\\cm\\Output\\"
         TEST_DIR_NAME_MINI = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-        TEST_DIR_NAME = "UnifiedTest"
+        #TEST_DIR_NAME = "UnifiedTest"
         OUTPUT_CONF_MAT_NAME = 'conf'
     elif pwd.getpwuid(os.getuid())[0] == 'borisef':  # In case of a linux platform - Boris
         # SET PARAMS - Boris
