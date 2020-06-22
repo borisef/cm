@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
-def display_annotated_db(test_set, model, hotEncodeReverse):
+def display_annotated_db(test_set, model, hotEncodeReverse,sideS):
     for idx, img_name in enumerate(test_set.filepaths):
         image = cv2.imread(img_name)
         im_rs = cv2.resize(image, (360, 360))
-        imagef = cv2.resize(image.astype(float), (128, 128)) / 255.0
+        imagef = cv2.resize(image.astype(float), (sideS, sideS)) / 255.0
 
-        prediction = model.predict(imagef.reshape([1, 128, 128, 3]), verbose=0)
+        prediction = model.predict(imagef.reshape([1, sideS, sideS, 3]), verbose=0)
         trueL = test_set.labels[idx]
         predL = np.argmax(prediction)
 
@@ -54,9 +54,15 @@ def confusion_matrix(model, testSet):
 
 
 def show_conf_matr(M, outf):
-    df_cm = pd.DataFrame(M, range(len(M)), range(len(M)))
+
+    df_cm = pd.DataFrame(M, range(len(M)), range(len(M))).round(3)
+
+
     sn.set(font_scale=1.4)  # for label size
-    sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
+    tn = ["black", "blue", "gray", "green", "red", "white", "yellow"]
+
+    sn.heatmap(df_cm, annot=True, annot_kws={"size": 8},
+               xticklabels=tn, yticklabels=tn)  # font size
 
     plt.savefig(outf)
     plt.close()
@@ -73,12 +79,12 @@ def my_acc_eval(cm_model, testSet):
         p = cm_model.predict_classes(testSet['images'][ind].reshape([1, 128, 128, 3]), verbose=0)[0]
 
         acc[labl] = acc[labl] + (labl == p)
-        if(true_labels_ind[ind] == 0): # white
-            waversAcc[labl] = waversAcc[labl] + (p == 0) + (p == 2)
-        elif (true_labels_ind[ind] == 1):  # black
-                waversAcc[labl] = waversAcc[labl] + (p == 1) + (p == 2)
+        if(true_labels_ind[ind] == 5): # white
+            waversAcc[labl] = waversAcc[labl] + (p == 5) + (p == 2)
+        elif (true_labels_ind[ind] == 0):  # black
+                waversAcc[labl] = waversAcc[labl] + (p == 0) + (p == 2)
         elif (true_labels_ind[ind] == 2):  # gray
-            waversAcc[labl] = waversAcc[labl] + (p == 0) + (p == 1) + (p == 2)
+            waversAcc[labl] = waversAcc[labl] + (p == 0) + (p == 5) + (p == 2)
         else:
             waversAcc[labl] = waversAcc[labl] + (true_labels_ind[ind] == p)
 

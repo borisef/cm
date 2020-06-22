@@ -31,10 +31,10 @@ def optimizors(random_optimizor):
     return opt
 
 
-def mnist_net(num_classes):
+def mnist_net(num_classes, side_size):
     # Model Architecture
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(128, 128, 3)))
+    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
     model.add(BatchNormalization())
     model.add(Convolution2D(16, 3, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))

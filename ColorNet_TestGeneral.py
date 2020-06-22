@@ -37,7 +37,6 @@ if __name__ == '__main__':
     train_ckpts_dir_name = "train_ckpts"
     model_name = 'color_model.h5'
     weights_name = 'ckpt_best.hdf5'
-    img_rows, img_cols = 128, 128
     num_classes = 7
 
     if platform.system() == "Windows":  # In case of a windows platform - Boris
@@ -52,7 +51,7 @@ if __name__ == '__main__':
         dataPrePath = "/home/borisef/projects/cm/Data/"
         outputPath = "/home/borisef/projects/cm/Output/"
         TEST_DIR_NAME_MINI = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-        TEST_DIR_NAME = "UnifiedTest"
+       # TEST_DIR_NAME = "UnifiedTest"
         OUTPUT_CONF_MAT_NAME = 'conf'
     elif pwd.getpwuid(os.getuid())[0] == 'koby_a':  # In case of a linux platform - Koby
         # SET PARAMS - Koby
@@ -108,4 +107,4 @@ if __name__ == '__main__':
     print("*******************")
 
     hotEncodeReverse = {5: 'white', 0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: 'blue', 6: 'yellow'}
-    display_annotated_db(test_set, color_model, hotEncodeReverse)
+    display_annotated_db(test_set, color_model, hotEncodeReverse, img_cols)
