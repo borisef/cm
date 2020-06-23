@@ -2,7 +2,7 @@ import tensorflow as tf
 import random
 
 from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.optimizers import SGD, RMSprop, Adagrad, Nadam
+from tensorflow.keras.optimizers import SGD, RMSprop, Adagrad, Nadam, Adam
 from tensorflow.keras.optimizers import Adam
 #from tensorflow.keras.optimizers import RMSprop
 
@@ -10,13 +10,15 @@ from tensorflow.keras.layers import BatchNormalization, Lambda, Input, Dense, Co
     ZeroPadding2D, Dropout, Flatten,  Reshape, Activation
 from tensorflow.keras.layers import Concatenate
 
+
 def optimizors(random_optimizor):
     if random_optimizor:
-        i = random.randint(0,4)
+        # i = random.randint(0, 4)
+        i = 1
         if i==0:
             opt = SGD()
         elif i==1:
-            opt= RMSprop()
+            opt = RMSprop()
         elif i==2:
             opt= Adagrad()
         elif i==3:
@@ -31,10 +33,10 @@ def optimizors(random_optimizor):
     return opt
 
 
-def mnist_net(num_classes):
+def mnist_net(num_classes, img_rows, img_columns):
     # Model Architecture
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(128, 128, 3)))
+    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(img_rows, img_columns, 3)))
     model.add(BatchNormalization())
     model.add(Convolution2D(16, 3, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -55,11 +57,11 @@ def mnist_net(num_classes):
     sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.7, nesterov=True)
     adam = Adam(lr=1e-4)
     opt = optimizors(random_optimizor=True)
-    model.compile(loss='categorical_crossentropy', optimizer = opt, metrics=['accuracy'])
+    # opt = Adam(learning_rate=0.005)
+    opt = RMSprop(learning_rate=0.005)
+    model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
     return model
-
-
 
 
 def beer_net(num_classes):
@@ -179,6 +181,7 @@ def beer_net(num_classes):
     model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
     return model
+
 
 def VGG_net(num_classes):
     model = Sequential()

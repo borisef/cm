@@ -1,8 +1,5 @@
 import os
-try:
-    import pwd
-except:
-    pass
+import pwd
 import cv2
 import platform
 import numpy as np
@@ -11,81 +8,64 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from myutils import (confusion_matrix_from_datagen, my_acc_eval_from_datagen,
                      show_conf_matr, numpyRGB2BGR, make_folder, display_annotated_db)
+from tensorflow.keras.applications.resnet50 import preprocess_input
 
 import datetime
 now = datetime.datetime.now
 
 
-from myutils import show_conf_matr
-from myutils import confusion_matrix_from_datagen, my_acc_eval_from_datagen
-
-# SET PARAMS
-
-TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
-TEST_DIR_NAME = "UnifiedTest"
-OUTPUT_DIR_NAME = "outColorNetOutputs_19_06_20/"
-train_ckpts_dir = "train_ckpts"
-model_name = 'color_model.h5'
-weights_name = 'ckpt_best.hdf5'
-img_rows, img_cols = 128, 128
-num_classes = 7
-
-
 if __name__ == '__main__':
+    # Control flags
     mini_mode = False
-    #OUTPUT_DIR_NAME = "outColorNetOutputs_15_06_20/"
-    train_ckpts_dir_name = "train_ckpts"
-    model_name = 'color_model.h5'
-    weights_name = 'ckpt_best.hdf5'
-    img_rows, img_cols = 128, 128
-    num_classes = 7
 
+    # Net and data parameters
+    batch_size = 32
+    img_rows, img_cols = 128, 128
+
+    # Paths && directories' and files' names
     if platform.system() == "Windows":  # In case of a windows platform - Boris
-        # SET PARAMS - Boris
-        dataPrePath = r"e:\\projects\\MB2\\cm\\Data\\"
-        outputPath = r"e:\\projects\\MB2\\cm\\Output\\"
-        TEST_DIR_NAME_MINI = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-        TEST_DIR_NAME = "UnifiedTest"
-        OUTPUT_CONF_MAT_NAME = 'conf'
+        dataPrePath = r'e:\\projects\\MB2\\cm\\Data\\'
+        outputPath = r'e:\\projects\\MB2\\cm\\Output\\'
     elif pwd.getpwuid(os.getuid())[0] == 'borisef':  # In case of a linux platform - Boris
-        # SET PARAMS - Boris
-        dataPrePath = "/home/borisef/projects/cm/Data/"
-        outputPath = "/home/borisef/projects/cm/Output/"
-        TEST_DIR_NAME_MINI = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-        TEST_DIR_NAME = "UnifiedTest"
-        OUTPUT_CONF_MAT_NAME = 'conf'
+        dataPrePath = r'/home/borisef/projects/cm/Data/'
+        outputPath = r'/home/borisef/projects/cm/Output/'
     elif pwd.getpwuid(os.getuid())[0] == 'koby_a':  # In case of a linux platform - Koby
-        # SET PARAMS - Koby
         dataPrePath = r'/media/koby_a/Data/databases/MagicBox/color_net/DB'
         outputPath = r'/media/koby_a/Data/databases/MagicBox/color_net/DB/results'
-        TEST_DIR_NAME_MINI = 'test_colorDB_without_truncation_mini_cleaned'
-        TEST_DIR_NAME = 'UnifiedTest'
-        OUTPUT_CONF_MAT_NAME = 'test_colorDB_without_truncation_mini_cleaned_50epochs'
 
-    # Set paths for the current run
+    TEST_DIR_NAME = 'UnifiedTest'
+    MINI_TEST_DIR_NAME = 'test_colorDB_without_truncation_mini_cleaned'
+    OUTPUT_DIR_NAME = "outColorNetOutputs_23_06_20/"
+    OUTPUT_CONF_MAT_NAME = 'test_colorDB_without_truncation_mini_cleaned_50epochs'
+    CKPT_DIR_NAME = "train_ckpts"
+    MODEL_NAME = 'color_model.h5'
+    WEIGHTS_NAME = 'ckpt_best.hdf5'
+
+    # Set paths and create directories for the current run
     if mini_mode:
-        testSetPath = os.path.join(dataPrePath, TEST_DIR_NAME_MINI)
+        testSetPath = os.path.join(dataPrePath, MINI_TEST_DIR_NAME)
     else:
         testSetPath = os.path.join(dataPrePath, TEST_DIR_NAME)
 
-    assert os.path.exists(os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name)), \
-        "Model's directory doesn't exist: " + os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name)
-
-    model_path = os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name, model_name)
-    best_weights_path = os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name, weights_name)
+    assert os.path.exists(os.path.join(outputPath, OUTPUT_DIR_NAME, CKPT_DIR_NAME)), \
+        "Model's directory doesn't exist: " + os.path.join(outputPath, OUTPUT_DIR_NAME, CKPT_DIR_NAME)
+    model_path = os.path.join(outputPath, OUTPUT_DIR_NAME, CKPT_DIR_NAME, MODEL_NAME)
+    best_weights_path = os.path.join(outputPath, OUTPUT_DIR_NAME, CKPT_DIR_NAME, WEIGHTS_NAME)
     statistics_dir = os.path.join(outputPath, OUTPUT_DIR_NAME, 'statistics')
     make_folder(statistics_dir)
 
     # Load best model - h5 format
-    color_model = load_model(model_path)
-    if os.path.exists(best_weights_path):
-        color_model.load_weights(best_weights_path)
+    color_model = load_model(best_weights_path)
+    # if os.path.exists(best_weights_path):
+    #     color_model.load_weights(best_weights_path)
 
     # Generate test data
-    test_datagen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=numpyRGB2BGR)
+    test_datagen = ImageDataGenerator(# rescale=1. / 255,
+                                      # preprocessing_function=numpyRGB2BGR,
+                                      preprocessing_function=preprocess_input)
     test_set = test_datagen.flow_from_directory(
         testSetPath,
-        batch_size=32,
+        batch_size=batch_size,
         target_size=(img_rows, img_cols),
         class_mode='categorical',
         shuffle=False)
