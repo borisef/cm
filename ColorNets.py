@@ -10,6 +10,9 @@ from tensorflow.keras.layers import BatchNormalization, Lambda, Input, Dense, Co
     ZeroPadding2D, Dropout, Flatten,  Reshape, Activation
 from tensorflow.keras.layers import Concatenate
 
+import keras_resnet.models
+
+
 def optimizors(random_optimizor):
     if random_optimizor:
         i = random.randint(0,4)
@@ -60,15 +63,23 @@ def mnist_net(num_classes, side_size):
     return model
 
 
+def resnet(num_classes, side_size):
+    shape, classes = (side_size, side_size, 3), num_classes
+    x = Input(shape)
+    model = keras_resnet.models.ResNet2D18(x,classes=classes)
+    model.compile("adam", "categorical_crossentropy", ["accuracy"])
+    model.summary()
 
 
-def beer_net(num_classes):
+    return model
+
+def beer_net(num_classes, side_size):
     # placeholder for input image
-    input_image = Input(shape=(128, 128, 3))
+    input_image = Input(shape=(side_size, side_size, 3))
     # ============================================= TOP BRANCH ===================================================
     # first top convolution layer
     top_conv1 = Convolution2D(filters=48, kernel_size=(11, 11), strides=(4, 4),
-                              input_shape=(128, 128, 3), activation='relu')(input_image)
+                              input_shape=(side_size, side_size, 3), activation='relu')(input_image)
     top_conv1 = BatchNormalization()(top_conv1)
     top_conv1 = MaxPooling2D(pool_size=(3, 3), strides=(2, 2))(top_conv1)
 
@@ -115,7 +126,7 @@ def beer_net(num_classes):
     # ============================================= TOP BOTTOM ===================================================
     # first bottom convolution layer
     bottom_conv1 = Convolution2D(filters=48, kernel_size=(11, 11), strides=(4, 4),
-                                 input_shape=(128, 128, 3), activation='relu')(input_image)
+                                 input_shape=(side_size, side_size, 3), activation='relu')(input_image)
     bottom_conv1 = BatchNormalization()(bottom_conv1)
     bottom_conv1 = MaxPooling2D(pool_size=(3, 3), strides=(2, 2))(bottom_conv1)
 
@@ -180,9 +191,9 @@ def beer_net(num_classes):
     model.summary()
     return model
 
-def VGG_net(num_classes):
+def VGG_net(num_classes, size_size):
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(128, 128, 3)))
+    model.add(Convolution2D(16, 3, 3, activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(size_size, size_size, 3)))
 
     model.add(BatchNormalization())
     model.add(Convolution2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
@@ -212,4 +223,3 @@ def VGG_net(num_classes):
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
     return model
-

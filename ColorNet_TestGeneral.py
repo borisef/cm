@@ -99,6 +99,8 @@ if __name__ == '__main__':
     [myAcc, myWacc] = my_acc_eval_from_datagen(color_model, test_set)
     print(M)
     show_conf_matr(M, os.path.join(statistics_dir, OUTPUT_CONF_MAT_NAME + '.png'))
+    #TODO: conf with wavers
+
     print("*******************")
     print(myAcc)
     print(myWacc)

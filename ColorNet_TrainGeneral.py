@@ -41,7 +41,7 @@ LOAD_FROM_CKPT = None
 img_rows, img_cols = 128, 128
 num_classes = 7
 batch_size = 128
-nb_epoch = 220
+nb_epoch = 100
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -130,9 +130,12 @@ myutils.dataSetHistogram(training_set.labels, abcLabels, os.path.join(stat_save_
 if(LOAD_FROM_CKPT is not None):
     model = load_model(LOAD_FROM_CKPT)
 else:
-    model = ColorNets.mnist_net(num_classes, img_cols)
+    #model = ColorNets.mnist_net(num_classes, img_cols)
     #model = ColorNets.beer_net(num_classes)
     #model = ColorNets.VGG_net(num_classes)
+    #model = ColorNets.resnet(num_classes, img_cols)
+    import tiny_resnet
+    model = tiny_resnet.myresnet16(num_classes, img_cols)
 
 saver = tf.train.Saver()
 
@@ -151,13 +154,13 @@ filepath=  train_ckpts_dir + "/" + "weights-improvement-{epoch:02d}-{val_acc:.2f
 filepath_best=  train_ckpts_dir + "/" + "ckpt_best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=50)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=25)
 callbacks_list = [checkpoint, checkpoint_best, es]
 
 
 
 model.fit_generator(training_set,
-   # steps_per_epoch=100,
+    steps_per_epoch=100,
     epochs=nb_epoch,
     validation_data=test_set,
    # validation_steps= 1,
