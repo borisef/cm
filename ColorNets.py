@@ -10,7 +10,7 @@ from tensorflow.keras.layers import BatchNormalization, Lambda, Input, Dense, Co
     ZeroPadding2D, Dropout, Flatten,  Reshape, Activation
 from tensorflow.keras.layers import Concatenate
 
-import keras_resnet.models
+#import keras_resnet.models
 
 
 def optimizors(random_optimizor):
@@ -62,16 +62,44 @@ def mnist_net(num_classes, side_size):
 
     return model
 
+def mnist_net1(num_classes, side_size):
+    # Model Architecture
+    model = Sequential()
+    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
+    model.add(BatchNormalization())
+    model.add(Convolution2D(16, 3, 3, activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+    model.add(BatchNormalization())
+    model.add(Flatten())
+    model.add(Dense(64, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(BatchNormalization())
+    # model.add(Dense(128, activation='relu'))
+    # model.add(Dropout(0.5))
+    # model.add(BatchNormalization())
+    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Lambda(lambda x: x, name='colors_prob'))
 
-def resnet(num_classes, side_size):
-    shape, classes = (side_size, side_size, 3), num_classes
-    x = Input(shape)
-    model = keras_resnet.models.ResNet2D18(x,classes=classes)
-    model.compile("adam", "categorical_crossentropy", ["accuracy"])
     model.summary()
-
+    # 'categorical_crossentropy'
+    sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.7, nesterov=True)
+    adam = Adam(lr=1e-4)
+    opt = optimizors(random_optimizor=True)
+    model.compile(loss='categorical_crossentropy', optimizer = RMSprop(), metrics=['accuracy'])
 
     return model
+
+
+# def resnet(num_classes, side_size):
+#     shape, classes = (side_size, side_size, 3), num_classes
+#     x = Input(shape)
+#     model = keras_resnet.models.ResNet2D18(x,classes=classes)
+#     model.compile("adam", "categorical_crossentropy", ["accuracy"])
+#     model.summary()
+#
+#
+#     return model
 
 def beer_net(num_classes, side_size):
     # placeholder for input image

@@ -26,7 +26,7 @@ import myutils
 
 
 abcLabels = ["black", "blue", "gray","green",  "red", "white", "yellow" ]
-class_weight = {0: 1.0, 1: 3.5,  2: 1.1,  3: 2.75,   4 :1.0,  5:0.85,    6:1.0}
+class_weight = {0: 1.25, 1: 4.0,  2: 0.5,  3: 4.0,   4 :1.0,  5:0.85,    6:1.0}
 #class_weight = {0: 1.0, 1: 3.0,  2: 1.0,  3: 1.5,   4 :1.0,  5:1.0,    6:1.0}
 
 #TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
@@ -41,7 +41,7 @@ LOAD_FROM_CKPT = None
 img_rows, img_cols = 128, 128
 num_classes = 7
 batch_size = 128
-nb_epoch = 100
+nb_epoch = 200
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -131,11 +131,11 @@ if(LOAD_FROM_CKPT is not None):
     model = load_model(LOAD_FROM_CKPT)
 else:
     #model = ColorNets.mnist_net(num_classes, img_cols)
-    #model = ColorNets.beer_net(num_classes)
-    #model = ColorNets.VGG_net(num_classes)
+    #model = ColorNets.beer_net(num_classes,img_cols)
+    model = ColorNets.VGG_net(num_classes,img_cols)
     #model = ColorNets.resnet(num_classes, img_cols)
-    import tiny_resnet
-    model = tiny_resnet.myresnet16(num_classes, img_cols)
+    #import tiny_resnet
+    #model = tiny_resnet.myresnet16(num_classes, img_cols)
 
 saver = tf.train.Saver()
 
@@ -154,7 +154,7 @@ filepath=  train_ckpts_dir + "/" + "weights-improvement-{epoch:02d}-{val_acc:.2f
 filepath_best=  train_ckpts_dir + "/" + "ckpt_best.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=25)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=42)
 callbacks_list = [checkpoint, checkpoint_best, es]
 
 
