@@ -81,7 +81,9 @@ if __name__ == '__main__':
         color_model.load_weights(best_weights_path)
 
     # Generate test data
-    test_datagen = ImageDataGenerator(rescale=1. / 255, preprocessing_function=numpyRGB2BGR)
+    test_datagen = ImageDataGenerator(
+        #rescale=1. / 255,
+        preprocessing_function=numpyRGB2BGR)
     test_set = test_datagen.flow_from_directory(
         testSetPath,
         batch_size=32,
@@ -100,6 +102,15 @@ if __name__ == '__main__':
     print(M)
     show_conf_matr(M, os.path.join(statistics_dir, OUTPUT_CONF_MAT_NAME + '.png'))
     #TODO: conf with wavers
+    M1 = M
+    M1[0,0] = M1[0,0] + M1[0,2]
+    M1[0, 2] = 0
+    M1[2, 2] = M1[2, 2] + M1[2, 0]+M1[2,5]
+    M1[2, 0] = 0
+    M1[2, 5] = 0
+    M1[5, 5] = M1[5, 5]  + M1[5, 2]
+    M1[5, 2] = 0
+    show_conf_matr(M, os.path.join(statistics_dir, OUTPUT_CONF_MAT_NAME + '_wavers.png'))
 
     print("*******************")
     print(myAcc)
@@ -109,4 +120,4 @@ if __name__ == '__main__':
     print("*******************")
 
     hotEncodeReverse = {5: 'white', 0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: 'blue', 6: 'yellow'}
-    display_annotated_db(test_set, color_model, hotEncodeReverse, img_cols)
+    display_annotated_db(test_set, color_model, hotEncodeReverse, img_cols,True)

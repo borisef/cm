@@ -7,11 +7,14 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
-def display_annotated_db(test_set, model, hotEncodeReverse,sideS):
+def display_annotated_db(test_set, model, hotEncodeReverse,sideS,onlyErrors):
     for idx, img_name in enumerate(test_set.filepaths):
+        normFactor = 1.0 #255.0
+        minusFactor = 110.0 # 0
         image = cv2.imread(img_name)
         im_rs = cv2.resize(image, (360, 360))
-        imagef = cv2.resize(image.astype(float), (sideS, sideS)) / 255.0
+        imagef = cv2.resize(image.astype(float), (sideS, sideS)) / normFactor
+        imagef = imagef - minusFactor
 
         prediction = model.predict(imagef.reshape([1, sideS, sideS, 3]), verbose=0)
         trueL = test_set.labels[idx]
@@ -21,7 +24,8 @@ def display_annotated_db(test_set, model, hotEncodeReverse,sideS):
         strRes = "Correct !"
         if(trueL!=predL):
             strRes = "Wrong !"
-        cv2.imshow(strRes + ". GT: " + hotEncodeReverse[trueL] + ", prediction: " + hotEncodeReverse[predL], im_rs)
+        if((onlyErrors == True and trueL!=predL) or (onlyErrors == False)):
+            cv2.imshow(strRes + ". GT: " + hotEncodeReverse[trueL] + ", prediction: " + hotEncodeReverse[predL], im_rs)
         if cv2.waitKey(0) == 27:
             cv2.destroyAllWindows()
 
@@ -38,7 +42,7 @@ def make_folder(directory):
 def numpyRGB2BGR(rgb):
     bgr = rgb[..., ::-1].copy()
 
-    return bgr
+    return (bgr-110.0)/255.0
 
 
 def confusion_matrix(model, testSet):

@@ -62,7 +62,7 @@ myutils.make_folder(outputPath)
 
 
 train_datagen = ImageDataGenerator(
-    rescale=1. / 255,
+    #rescale=1. / 255,
     # horizontal_flip=True,
     # vertical_flip=True,
     # width_shift_range=[-0.025,0.025],
@@ -73,7 +73,7 @@ train_datagen = ImageDataGenerator(
 )
 
 test_datagen = ImageDataGenerator(
-    rescale=1. / 255,
+    #rescale=1. / 255,
     preprocessing_function=myutils.numpyRGB2BGR
 )
 
@@ -130,9 +130,9 @@ myutils.dataSetHistogram(training_set.labels, abcLabels, os.path.join(stat_save_
 if(LOAD_FROM_CKPT is not None):
     model = load_model(LOAD_FROM_CKPT)
 else:
-    #model = ColorNets.mnist_net(num_classes, img_cols)
+    model = ColorNets.mnist_net(num_classes, img_cols)
     #model = ColorNets.beer_net(num_classes,img_cols)
-    model = ColorNets.VGG_net(num_classes,img_cols)
+    #model = ColorNets.VGG_net(num_classes,img_cols)
     #model = ColorNets.resnet(num_classes, img_cols)
     #import tiny_resnet
     #model = tiny_resnet.myresnet16(num_classes, img_cols)
@@ -160,7 +160,7 @@ callbacks_list = [checkpoint, checkpoint_best, es]
 
 
 model.fit_generator(training_set,
-    steps_per_epoch=100,
+   # steps_per_epoch=100,
     epochs=nb_epoch,
     validation_data=test_set,
    # validation_steps= 1,
