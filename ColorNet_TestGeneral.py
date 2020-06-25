@@ -20,15 +20,16 @@ from myutils import show_conf_matr
 from myutils import confusion_matrix_from_datagen, my_acc_eval_from_datagen
 
 # SET PARAMS
+REMOVE_LAST = True
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
 TEST_DIR_NAME = "UnifiedTest" #"tiles" #
-OUTPUT_DIR_NAME = "outColorNetOutputs_19_06_20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_25_06_20/"
 train_ckpts_dir = "train_ckpts"
 model_name = 'color_model.h5'
 weights_name = 'ckpt_best.hdf5'
 img_rows, img_cols = 128, 128
-num_classes = 7
+num_classes = 7 - int(REMOVE_LAST)
 
 
 if __name__ == '__main__':
@@ -37,7 +38,8 @@ if __name__ == '__main__':
     train_ckpts_dir_name = "train_ckpts"
     model_name = 'color_model.h5'
     weights_name = 'ckpt_best.hdf5'
-    num_classes = 7
+    last_name = 'ckpt_last.hdf5'
+
 
     if platform.system() == "Windows":  # In case of a windows platform - Boris
         # SET PARAMS - Boris
@@ -72,12 +74,13 @@ if __name__ == '__main__':
 
     model_path = os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name, model_name)
     best_weights_path = os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name, weights_name)
+    last_weights_path = os.path.join(outputPath, OUTPUT_DIR_NAME, train_ckpts_dir_name, last_name)
     statistics_dir = os.path.join(outputPath, OUTPUT_DIR_NAME, 'statistics')
     make_folder(statistics_dir)
 
     # Load best model - h5 format
-    color_model = load_model(model_path)
-    if os.path.exists(best_weights_path):
+    color_model = load_model(last_weights_path) #last
+    if os.path.exists(best_weights_path): #best
         color_model.load_weights(best_weights_path)
 
     # Generate test data
@@ -120,4 +123,7 @@ if __name__ == '__main__':
     print("*******************")
 
     hotEncodeReverse = {5: 'white', 0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: 'blue', 6: 'yellow'}
+    if(REMOVE_LAST):
+        hotEncodeReverse.popitem()
+
     display_annotated_db(test_set, color_model, hotEncodeReverse, img_cols,True)

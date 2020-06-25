@@ -25,21 +25,25 @@ import ColorNets
 import myutils
 
 
-abcLabels = ["black", "blue", "gray","green",  "red", "white", "yellow" ]
-class_weight = {0: 1.25, 1: 4.0,  2: 0.5,  3: 4.0,   4 :1.0,  5:0.85,    6:1.0}
-#class_weight = {0: 1.0, 1: 3.0,  2: 1.0,  3: 1.5,   4 :1.0,  5:1.0,    6:1.0}
+REMOVE_LAST = True
+abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "yellow" ]
+class_weight = {0: 1.5,    1: 2.7,    2: 0.9,     3: 2.5,   4 :1.0,    5:0.80,    6:1.2}
+
+if(REMOVE_LAST):
+    abcLabels.pop()
+    class_weight.popitem()
 
 #TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_19_06_20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_25_06_20/"
 LOAD_FROM_CKPT = None
-#LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_19_06_20/train_ckpts/color_model.hdf5"
-
+#LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_24_06_20/train_ckpts/ckpt_best.hdf5"
+JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
-num_classes = 7
+num_classes = 7 - int(REMOVE_LAST)
 batch_size = 128
 nb_epoch = 200
 MINI_TRAIN = False # debug
@@ -152,21 +156,23 @@ except:
 # checkpoint
 filepath=  train_ckpts_dir + "/" + "weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
 filepath_best=  train_ckpts_dir + "/" + "ckpt_best.hdf5"
+filepath_last=  train_ckpts_dir + "/" + "ckpt_last.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+checkpointLast = ModelCheckpoint(filepath_last, monitor='val_acc', verbose=1, save_best_only=False)
 checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=42)
-callbacks_list = [checkpoint, checkpoint_best, es]
+callbacks_list = [checkpoint, checkpoint_best, checkpointLast, es]
 
 
-
-model.fit_generator(training_set,
-   # steps_per_epoch=100,
-    epochs=nb_epoch,
-    validation_data=test_set,
-   # validation_steps= 1,
-    callbacks=callbacks_list,
-    class_weight=class_weight
-                    )
+if(not JUST_SAVE):
+    model.fit_generator(training_set,
+        steps_per_epoch=300,
+        epochs=nb_epoch,
+        validation_data=test_set,
+       # validation_steps= 1,
+        callbacks=callbacks_list,
+        class_weight=class_weight
+                        )
 
 
 #load best chekpoint and save
