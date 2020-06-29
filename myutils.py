@@ -7,10 +7,15 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
+
+def myacuracy(y_true,y_pred):
+   #K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1)))
+    return 0;
+
 def display_annotated_db(test_set, model, hotEncodeReverse,sideS,onlyErrors):
     for idx, img_name in enumerate(test_set.filepaths):
         normFactor = 255.0
-        minusFactor =  0
+        minusFactor =  125
         image = cv2.imread(img_name)
         im_rs = cv2.resize(image, (360, 360))
 
@@ -42,7 +47,13 @@ def make_folder(directory):
 def numpyRGB2BGR(rgb):
     bgr = rgb[..., ::-1].copy()
 
-    return (bgr)/255.0
+    return (bgr - 125)/255.0
+
+def numpyRGB2BGR_preprocess(rgb):
+    bgr = rgb[..., ::-1].copy()
+
+
+    return (bgr - 111.0)
 
 
 def confusion_matrix(model, testSet):
@@ -162,3 +173,20 @@ def confusion_matrix_from_datagen(model, test_set):
     row_sums = M.sum(axis=1)
     new_matrix = M / row_sums[:, np.newaxis]
     return new_matrix
+
+def ConvertConfMatrix2ProbMatrix(M, priors = None):
+    # M is is NxN, priors - Nx1 (1/N default)
+
+    N = M.shape[0]
+    if(priors is None):
+        priors = np.ones(shape=(N,1))/N
+
+    M_probs = np.zeros_like(M)
+    for i in range(N):
+        for j in range(N):
+            for i1 in range(N):
+                for j1 in range(N):
+                    M_probs[i,j] += priors[i1]*M[i1,i]* priors[j1]*M[j1,j]
+                    #M_probs[j, i] = M_probs[i,j]
+
+    return M_probs

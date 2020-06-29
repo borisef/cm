@@ -7,10 +7,22 @@ import cv2
 import platform
 import numpy as np
 
+if (platform.system() == "Windows"):
+    import ctypes
+
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cudart64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cublas64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cufft64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\curand64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cusolver64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cusparse64_100.dll")
+
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from myutils import (confusion_matrix_from_datagen, my_acc_eval_from_datagen,
                      show_conf_matr, numpyRGB2BGR, make_folder, display_annotated_db)
+
+from tensorflow.keras.applications.resnet50 import preprocess_input
 
 import datetime
 now = datetime.datetime.now
@@ -18,27 +30,26 @@ now = datetime.datetime.now
 
 from myutils import show_conf_matr
 from myutils import confusion_matrix_from_datagen, my_acc_eval_from_datagen
+import myutils
 
 # SET PARAMS
 REMOVE_LAST = True
+mini_mode = False
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
 TEST_DIR_NAME = "UnifiedTest" #"tiles" #
-OUTPUT_DIR_NAME = "outColorNetOutputs_25_06_20/"
-train_ckpts_dir = "train_ckpts"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try6/"
+train_ckpts_dir_name = "train_ckpts"
 model_name = 'color_model.h5'
 weights_name = 'ckpt_best.hdf5'
+last_name = 'ckpt_last.hdf5'
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
 
 
 if __name__ == '__main__':
-    mini_mode = False
-    #OUTPUT_DIR_NAME = "outColorNetOutputs_15_06_20/"
-    train_ckpts_dir_name = "train_ckpts"
-    model_name = 'color_model.h5'
-    weights_name = 'ckpt_best.hdf5'
-    last_name = 'ckpt_last.hdf5'
+
+
 
 
     if platform.system() == "Windows":  # In case of a windows platform - Boris
@@ -83,10 +94,13 @@ if __name__ == '__main__':
     if os.path.exists(best_weights_path): #best
         color_model.load_weights(best_weights_path)
 
+    color_model.summary()
     # Generate test data
     test_datagen = ImageDataGenerator(
         #rescale=1. / 255,
-        preprocessing_function=numpyRGB2BGR)
+        preprocessing_function=numpyRGB2BGR
+    #    preprocessing_function=preprocess_input
+    )
     test_set = test_datagen.flow_from_directory(
         testSetPath,
         batch_size=32,
@@ -104,6 +118,7 @@ if __name__ == '__main__':
     [myAcc, myWacc] = my_acc_eval_from_datagen(color_model, test_set)
     print(M)
     show_conf_matr(M, os.path.join(statistics_dir, OUTPUT_CONF_MAT_NAME + '.png'))
+    np.savetxt(os.path.join(statistics_dir, OUTPUT_CONF_MAT_NAME + '.csv'), M, delimiter=",")
     #TODO: conf with wavers
     M1 = M
     M1[0,0] = M1[0,0] + M1[0,2]
@@ -114,6 +129,7 @@ if __name__ == '__main__':
     M1[5, 5] = M1[5, 5]  + M1[5, 2]
     M1[5, 2] = 0
     show_conf_matr(M, os.path.join(statistics_dir, OUTPUT_CONF_MAT_NAME + '_wavers.png'))
+
 
     print("*******************")
     print(myAcc)

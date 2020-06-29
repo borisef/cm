@@ -37,12 +37,13 @@ def optimizors(random_optimizor):
 def mnist_net(num_classes, side_size):
     # Model Architecture
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
-    model.add(BatchNormalization())
+    #model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
+    model.add(Convolution2D(8, 3, 3, activation='relu', input_shape=(side_size, side_size, 3))) #try 6 -> 86
+    #model.add(BatchNormalization())
     model.add(Convolution2D(16, 3, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
     model.add(Flatten())
     model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.5))
@@ -59,27 +60,30 @@ def mnist_net(num_classes, side_size):
     adam = Adam(lr=1e-4)
     opt = optimizors(random_optimizor=True)
     rmsprop = RMSprop()
-    model.compile(loss='categorical_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
 
     return model
 
 def mnist_net1(num_classes, side_size):
     # Model Architecture
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
-    model.add(BatchNormalization())
+    model.add(Convolution2D(8, 3, 3, activation='relu', input_shape=(side_size, side_size, 3),name="cm_input"))
+    #model.add(BatchNormalization())
+    #model.add(AveragePooling2D(pool_size=(2, 2)))
     model.add(Convolution2D(16, 3, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-    model.add(BatchNormalization())
+    model.add(Dropout(0.15))
+    #model.add(BatchNormalization())
+    model.add(Convolution2D(32, 3, 3, activation='relu'))
+    #model.add(BatchNormalization())
     model.add(Flatten())
     model.add(Dense(64, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(BatchNormalization())
+    model.add(Dropout(0.25))
+    #model.add(BatchNormalization())
     # model.add(Dense(128, activation='relu'))
     # model.add(Dropout(0.5))
     # model.add(BatchNormalization())
-    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax',name="cm_output"))
     model.add(Lambda(lambda x: x, name='colors_prob'))
 
     model.summary()
@@ -87,10 +91,10 @@ def mnist_net1(num_classes, side_size):
     sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.7, nesterov=True)
     adam = Adam(lr=1e-4)
     opt = optimizors(random_optimizor=True)
-    model.compile(loss='categorical_crossentropy', optimizer = RMSprop(), metrics=['accuracy'])
+    rmsprop = RMSprop()
+    model.compile(loss='categorical_crossentropy', optimizer=rmsprop, metrics=['accuracy'])
 
     return model
-
 
 # def resnet(num_classes, side_size):
 #     shape, classes = (side_size, side_size, 3), num_classes
@@ -222,11 +226,11 @@ def beer_net(num_classes, side_size):
 
 def VGG_net(num_classes, size_size):
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(size_size, size_size, 3)))
+    model.add(Convolution2D(16, 3, 3, activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(size_size, size_size, 3), name = "cm_input"))
 
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
     model.add(Convolution2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
-    model.add(BatchNormalization())
+   # model.add(BatchNormalization())
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.2))
     model.add(Convolution2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
@@ -245,7 +249,7 @@ def VGG_net(num_classes, size_size):
     model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax', name = "cm_output"))
     # compile model
     opt = SGD(lr=0.001, momentum=0.9)
     opt = RMSprop()

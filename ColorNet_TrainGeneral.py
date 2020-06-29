@@ -4,6 +4,17 @@ import cv2
 import shutil
 import platform
 
+
+if(platform.system()=="Windows"):
+    import ctypes
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cudart64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cublas64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cufft64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\curand64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cusolver64_100.dll")
+    ctypes.WinDLL("c:\\Users\\efrat\\.conda\\pkgs\\cudatoolkit-10.0.130-0\Library\\bin\\cusparse64_100.dll")
+
+
 import tensorflow as tf
 from tensorflow.python.tools import freeze_graph
 from tensorflow.keras.models import Sequential
@@ -17,17 +28,22 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 import k2tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.resnet50 import preprocess_input
+
 
 import datetime
 now = datetime.datetime.now
 import freezeUtils
 import ColorNets
 import myutils
+from  myutils import myacuracy
+
+#plt.switch_backend('Qt4Agg')
 
 
 REMOVE_LAST = True
 abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "yellow" ]
-class_weight = {0: 1.5,    1: 2.7,    2: 0.9,     3: 2.5,   4 :1.0,    5:0.80,    6:1.2}
+class_weight = {0: 2.5,    1: 2.25,    2: 0.9,     3: 2.25,   4 :1.0,    5:0.80,    6:1.2}
 
 if(REMOVE_LAST):
     abcLabels.pop()
@@ -36,16 +52,18 @@ if(REMOVE_LAST):
 #TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
+#TRAIN_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_25_06_20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try7/"
 LOAD_FROM_CKPT = None
 #LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_24_06_20/train_ckpts/ckpt_best.hdf5"
 JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 128
-nb_epoch = 200
+batch_size = 256
+steps_per_epoch = 200
+nb_epoch = 2000
 MINI_TRAIN = False # debug
 SAVE_BEST = True
 
@@ -55,6 +73,8 @@ if(MINI_TRAIN):
 if(platform.system()=="Windows"):
     dataPrePath = r"e:\\projects\\MB2\\cm\\Data\\"
     outputPath = r"e:\\projects\\MB2\\cm\\Output\\"
+    import ctypes
+    hllDll = ctypes.WinDLL("c:\\Program Files\\NVIDIA Corporation\\NvStreamSrv\\cudart64_100.dll")
 else:
     if(os.getlogin()=='borisef'):
         dataPrePath = "/home/borisef/projects/cm/Data/"
@@ -72,13 +92,16 @@ train_datagen = ImageDataGenerator(
     # width_shift_range=[-0.025,0.025],
     # height_shift_range=[-0.025,0.025],
     # brightness_range=[0.85,1.15],
-    preprocessing_function=myutils.numpyRGB2BGR,
-    validation_split=0.0
+    #preprocessing_function=myutils.numpyRGB2BGR,
+    #preprocessing_function=preprocess_input
+    preprocessing_function=myutils.numpyRGB2BGR
+    #validation_split=0.0
 )
 
 test_datagen = ImageDataGenerator(
     #rescale=1. / 255,
     preprocessing_function=myutils.numpyRGB2BGR
+    #preprocessing_function=preprocess_input
 )
 
 
@@ -100,7 +123,7 @@ training_set = train_datagen.flow_from_directory(
 test_set = test_datagen.flow_from_directory(
     testSet,
     target_size=(img_rows, img_cols),
-    batch_size=batch_size*4,
+    batch_size=batch_size,
     class_mode='categorical')
 
 
@@ -160,16 +183,16 @@ filepath_last=  train_ckpts_dir + "/" + "ckpt_last.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 checkpointLast = ModelCheckpoint(filepath_last, monitor='val_acc', verbose=1, save_best_only=False)
 checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=42)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=30)
 callbacks_list = [checkpoint, checkpoint_best, checkpointLast, es]
 
 
 if(not JUST_SAVE):
     model.fit_generator(training_set,
-        steps_per_epoch=300,
+        steps_per_epoch=steps_per_epoch,
         epochs=nb_epoch,
         validation_data=test_set,
-       # validation_steps= 1,
+        validation_steps= int(steps_per_epoch/7),
         callbacks=callbacks_list,
         class_weight=class_weight
                         )
