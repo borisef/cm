@@ -38,7 +38,7 @@ mini_mode = False
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
 TEST_DIR_NAME = "UnifiedTest" #"tiles" #
-OUTPUT_DIR_NAME = "outColorNetOutputs_try6/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try7/"
 train_ckpts_dir_name = "train_ckpts"
 model_name = 'color_model.h5'
 weights_name = 'ckpt_best.hdf5'
