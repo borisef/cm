@@ -37,17 +37,17 @@ def optimizors(random_optimizor):
 def mnist_net(num_classes, side_size):
     # Model Architecture
     model = Sequential()
-    #model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
-    model.add(Convolution2D(8, 3, 3, activation='relu', input_shape=(side_size, side_size, 3))) #try 6 -> 86
+    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
+    #model.add(Convolution2D(8, 3, 3, activation='relu', input_shape=(side_size, side_size, 3))) #try 6 -> 86
     #model.add(BatchNormalization())
     model.add(Convolution2D(16, 3, 3, activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
-    #model.add(BatchNormalization())
+    model.add(BatchNormalization())
     model.add(Flatten())
     model.add(Dense(64, activation='relu'))
     model.add(Dropout(0.5))
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
     # model.add(Dense(128, activation='relu'))
     # model.add(Dropout(0.5))
     # model.add(BatchNormalization())

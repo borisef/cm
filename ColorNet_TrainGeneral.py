@@ -54,14 +54,14 @@ TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 #TRAIN_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_try8/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try10/"
 LOAD_FROM_CKPT = None
 #LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_24_06_20/train_ckpts/ckpt_best.hdf5"
 JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 256
+batch_size = 512
 steps_per_epoch = 200
 nb_epoch = 2000
 MINI_TRAIN = False # debug

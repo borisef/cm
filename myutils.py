@@ -47,7 +47,7 @@ def make_folder(directory):
 def numpyRGB2BGR(rgb):
     bgr = rgb[..., ::-1].copy()
 
-    return (bgr - 125)/255.0
+    return (bgr )/255.0
 
 def numpyRGB2BGR_preprocess(rgb):
     bgr = rgb[..., ::-1].copy()
