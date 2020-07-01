@@ -61,7 +61,7 @@ JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 512
+batch_size = 1024
 steps_per_epoch = 200
 nb_epoch = 2000
 MINI_TRAIN = False # debug

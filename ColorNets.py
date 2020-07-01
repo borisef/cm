@@ -37,7 +37,7 @@ def optimizors(random_optimizor):
 def mnist_net(num_classes, side_size):
     # Model Architecture
     model = Sequential()
-    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3)))
+    model.add(Convolution2D(16, 3, 3, activation='relu', input_shape=(side_size, side_size, 3),name="cm_input"))
     #model.add(Convolution2D(8, 3, 3, activation='relu', input_shape=(side_size, side_size, 3))) #try 6 -> 86
     #model.add(BatchNormalization())
     model.add(Convolution2D(16, 3, 3, activation='relu'))
@@ -51,7 +51,7 @@ def mnist_net(num_classes, side_size):
     # model.add(Dense(128, activation='relu'))
     # model.add(Dropout(0.5))
     # model.add(BatchNormalization())
-    model.add(Dense(num_classes, activation='softmax'))
+    model.add(Dense(num_classes, activation='softmax',name="cm_output"))
     model.add(Lambda(lambda x: x, name='colors_prob'))
 
     model.summary()
