@@ -9,12 +9,12 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
 def display_annotated_db(test_set, model, hotEncodeReverse,sideS,onlyErrors):
     for idx, img_name in enumerate(test_set.filepaths):
-        normFactor = 1.0 #255.0
+        normFactor = 255.0
         minusFactor = 110.0 # 0
         image = cv2.imread(img_name)
         im_rs = cv2.resize(image, (360, 360))
-        imagef = cv2.resize(image.astype(float), (sideS, sideS)) / normFactor
         imagef = imagef - minusFactor
+        imagef = cv2.resize(image.astype(float), (sideS, sideS)) / normFactor
 
         prediction = model.predict(imagef.reshape([1, sideS, sideS, 3]), verbose=0)
         trueL = test_set.labels[idx]
@@ -42,7 +42,15 @@ def make_folder(directory):
 def numpyRGB2BGR(rgb):
     bgr = rgb[..., ::-1].copy()
 
-    return (bgr-110.0)/255.0
+    return (bgr)/255.0
+
+def numpyRGB2BGR_likeKoby(rgb):
+    bgr = rgb[..., ::-1].copy()
+    mmm = [103.939, 116.779, 123.68]
+    bgr[..., 0] -= mmm[0]
+    bgr[..., 1] -= mmm[1]
+    bgr[..., 2] -= mmm[2]
+    return bgr/255.0
 
 
 def confusion_matrix(model, testSet):
@@ -157,7 +165,8 @@ def confusion_matrix_from_datagen(model, test_set):
     M = sklearn_confusion_matrix(test_set.classes, y_pred)
     print(M)
     print('Classification Report')
-    target_names = ["black", "blue", "gray", "green",  "red", "white", "yellow"]
+    #target_names = ["black", "blue", "gray", "green",  "red", "white", "yellow"]
+    target_names = ["black", "blue", "gray", "green", "red", "white"]
     print(classification_report(test_set.classes, y_pred, target_names=target_names))
     row_sums = M.sum(axis=1)
     new_matrix = M / row_sums[:, np.newaxis]
