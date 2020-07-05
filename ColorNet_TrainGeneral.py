@@ -41,9 +41,9 @@ from  myutils import myacuracy
 #plt.switch_backend('Qt4Agg')
 
 
-REMOVE_LAST = True
+REMOVE_LAST = False
 abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "yellow" ]
-class_weight = {0: 2.5,    1: 2.25,    2: 0.9,     3: 2.25,   4 :1.0,    5:0.80,    6:1.2}
+class_weight = {0: 2.5,    1: 2.25,    2: 0.9,     3: 2.25,   4 :1.0,    5:0.80,    6:500.2}
 
 if(REMOVE_LAST):
     abcLabels.pop()
@@ -54,15 +54,15 @@ TEST_DIR_NAME = "UnifiedTest"
 TRAIN_DIR_NAME = r'UnifiedTrain'
 #TRAIN_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_try10/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try11/"
 LOAD_FROM_CKPT = None
 #LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_24_06_20/train_ckpts/ckpt_best.hdf5"
 JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 1024
-steps_per_epoch = 200
+batch_size = 128
+steps_per_epoch = 100
 nb_epoch = 2000
 MINI_TRAIN = False # debug
 SAVE_BEST = True

@@ -47,7 +47,7 @@ def make_folder(directory):
 def numpyRGB2BGR(rgb):
     bgr = rgb[..., ::-1].copy()
 
-    return (bgr -125.0 )/255.0
+    return (bgr )/255.0
 
 def numpyRGB2BGR_preprocess(rgb):
     bgr = rgb[..., ::-1].copy()
@@ -168,7 +168,7 @@ def confusion_matrix_from_datagen(model, test_set):
     M = sklearn_confusion_matrix(test_set.classes, y_pred)
     print(M)
     print('Classification Report')
-    target_names = ["black", "blue", "gray", "green",  "red", "white"]
+    target_names = ["black", "blue", "gray", "green",  "red", "white", "yk"]
     print(classification_report(test_set.classes, y_pred, target_names=target_names))
     row_sums = M.sum(axis=1)
     new_matrix = M / row_sums[:, np.newaxis]

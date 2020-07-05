@@ -33,12 +33,12 @@ from myutils import confusion_matrix_from_datagen, my_acc_eval_from_datagen
 import myutils
 
 # SET PARAMS
-REMOVE_LAST = True
+REMOVE_LAST = False
 mini_mode = False
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
 TEST_DIR_NAME = "UnifiedTest" #"tiles" #
-OUTPUT_DIR_NAME = "outColorNetOutputs_try10/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try11/"
 train_ckpts_dir_name = "train_ckpts"
 model_name = 'color_model.h5'
 weights_name = 'ckpt_best.hdf5'
