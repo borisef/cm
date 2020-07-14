@@ -42,26 +42,27 @@ from  myutils import myacuracy
 
 
 REMOVE_LAST = False
-abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "yellow" ]
-class_weight = {0: 2.5,    1: 2.25,    2: 0.9,     3: 2.25,   4 :1.0,    5:0.80,    6:500.2}
+abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "ykhaki" ]
+class_weight = {0: 0.5,    1: 1.0,    2: 0.5,     3: 1.0,   4 :1.0,    5:0.9,    6:2.0}
+d_weight = {0: 0.85,    1: 1.0,    2: 1.0,     3: 1.0,   4 :0.9,    5:1.0,    6:1.0}
 
 if(REMOVE_LAST):
     abcLabels.pop()
     class_weight.popitem()
 
 #TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-TEST_DIR_NAME = "UnifiedTest"
+TEST_DIR_NAME = ["Exam1_clean_cc" , "UnifiedTest"][0]
 TRAIN_DIR_NAME = r'UnifiedTrain'
 #TRAIN_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_try11/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try20/"
 LOAD_FROM_CKPT = None
 #LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_24_06_20/train_ckpts/ckpt_best.hdf5"
 JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 128
+batch_size = 64
 steps_per_epoch = 100
 nb_epoch = 2000
 MINI_TRAIN = False # debug
@@ -93,15 +94,15 @@ train_datagen = ImageDataGenerator(
     # height_shift_range=[-0.025,0.025],
     # brightness_range=[0.85,1.15],
     #preprocessing_function=myutils.numpyRGB2BGR,
-    #preprocessing_function=preprocess_input
-    preprocessing_function=myutils.numpyRGB2BGR
+    preprocessing_function=myutils.preprocess_hand_crafted
+    #preprocessing_function=myutils.numpyRGB2BGR
     #validation_split=0.0
 )
 
 test_datagen = ImageDataGenerator(
     #rescale=1. / 255,
-    preprocessing_function=myutils.numpyRGB2BGR
-    #preprocessing_function=preprocess_input
+    #preprocessing_function=myutils.numpyRGB2BGR
+    preprocessing_function=myutils.preprocess_hand_crafted
 )
 
 
@@ -118,13 +119,17 @@ training_set = train_datagen.flow_from_directory(
     target_size=(img_rows, img_cols),
     batch_size=batch_size,
     class_mode='categorical',
-    subset = "training")
+    #subset = "training"
+    shuffle=True,
+    seed=42
+)
 
 test_set = test_datagen.flow_from_directory(
     testSet,
     target_size=(img_rows, img_cols),
     batch_size=batch_size,
-    class_mode='categorical')
+    class_mode='categorical'
+)
 
 
 # REMOVE OUTPUTs
@@ -186,13 +191,18 @@ checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, s
 es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=30)
 callbacks_list = [checkpoint, checkpoint_best, checkpointLast, es]
 
+weights = myutils.calc_weights(training_set.labels, training_set.class_indices)
+for color_class in weights.keys():
+    weights[color_class] = weights[color_class] * d_weight[color_class]
+
+
 
 if(not JUST_SAVE):
     model.fit_generator(training_set,
         steps_per_epoch=steps_per_epoch,
         epochs=nb_epoch,
         validation_data=test_set,
-        validation_steps= int(steps_per_epoch/7),
+        #validation_steps= int(steps_per_epoch/7),
         callbacks=callbacks_list,
         class_weight=class_weight
                         )

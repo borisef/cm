@@ -19,8 +19,11 @@ def display_annotated_db(test_set, model, hotEncodeReverse,sideS,onlyErrors):
         image = cv2.imread(img_name)
         im_rs = cv2.resize(image, (360, 360))
 
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = preprocess_hand_crafted(image.astype(float))
 
-        imagef = (cv2.resize(image.astype(float), (sideS, sideS)) - minusFactor) / normFactor
+        imagef = (cv2.resize(image.astype(float), (sideS, sideS)))
+
         prediction = model.predict(imagef.reshape([1, sideS, sideS, 3]), verbose=0)
         trueL = test_set.labels[idx]
         predL = np.argmax(prediction)
@@ -49,12 +52,39 @@ def numpyRGB2BGR(rgb):
 
     return (bgr )/255.0
 
+def preprocess_hand_crafted(img):
+    img = img[..., ::-1]
+    mean = [103.939, 116.779, 123.68]
+    mean = [105.0, 115.0, 125.0]
+    img[..., 0] -= mean[0]
+    img[..., 1] -= mean[1]
+    img[..., 2] -= mean[2]
+
+    img[..., 0] /= 255.0
+    img[..., 1] /= 255.0
+    img[..., 2] /= 255.0
+
+    return img
+
 def numpyRGB2BGR_preprocess(rgb):
     bgr = rgb[..., ::-1].copy()
 
 
     return (bgr - 111.0)
 
+def calc_weights(labels, hotEncode):
+    min_val = np.inf
+    weight_vec = {}
+    for color in hotEncode.keys():
+        tmp_val = 1 / (labels[labels == hotEncode[color]].size / labels.size)
+        if tmp_val < min_val:
+            min_val = tmp_val
+        weight_vec[hotEncode[color]] = tmp_val
+    # Normalize weights so the minimum weight equals 1
+    for color_class in weight_vec.keys():
+        weight_vec[color_class] = weight_vec[color_class] / min_val
+
+    return weight_vec
 
 def confusion_matrix(model, testSet):
     hist = np.sum(testSet['labels'], axis=0)
@@ -74,7 +104,7 @@ def show_conf_matr(M, outf):
 
 
     sn.set(font_scale=1.4)  # for label size
-    tn = ["black", "blue", "gray", "green", "red", "white", "yellow"]
+    tn = ["black", "blue", "gray", "green", "red", "white", "ykhaki"]
 
     sn.heatmap(df_cm, annot=True, annot_kws={"size": 8},
                xticklabels=tn, yticklabels=tn)  # font size
@@ -168,7 +198,8 @@ def confusion_matrix_from_datagen(model, test_set):
     M = sklearn_confusion_matrix(test_set.classes, y_pred)
     print(M)
     print('Classification Report')
-    target_names = ["black", "blue", "gray", "green",  "red", "white", "yk"]
+    target_names = ["black", "blue", "gray", "green",  "red", "white", "ykhaki"]
+
     print(classification_report(test_set.classes, y_pred, target_names=target_names))
     row_sums = M.sum(axis=1)
     new_matrix = M / row_sums[:, np.newaxis]

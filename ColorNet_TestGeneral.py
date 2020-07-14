@@ -37,8 +37,8 @@ REMOVE_LAST = False
 mini_mode = False
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
-TEST_DIR_NAME = "UnifiedTest" #"tiles" #
-OUTPUT_DIR_NAME = "outColorNetOutputs_try11/"
+TEST_DIR_NAME =  ["Exam1_clean_cc" , "UnifiedTest"][1]
+OUTPUT_DIR_NAME = "outColorNetOutputs_try20/"
 train_ckpts_dir_name = "train_ckpts"
 model_name = 'color_model.h5'
 weights_name = 'ckpt_best.hdf5'
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     # Generate test data
     test_datagen = ImageDataGenerator(
         #rescale=1. / 255,
-        preprocessing_function=numpyRGB2BGR
+        preprocessing_function=myutils.preprocess_hand_crafted
     #    preprocessing_function=preprocess_input
     )
     test_set = test_datagen.flow_from_directory(
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     print(np.mean(myWacc))
     print("*******************")
 
-    hotEncodeReverse = {5: 'white', 0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: 'blue', 6: 'yellow'}
+    hotEncodeReverse = {5: 'white', 0: 'black', 2: 'gray', 4: 'red', 3: 'green', 1: 'blue', 6: 'ykhaki'}
     if(REMOVE_LAST):
         hotEncodeReverse.popitem()
 
