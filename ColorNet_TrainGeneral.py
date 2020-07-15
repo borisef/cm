@@ -44,14 +44,14 @@ from  myutils import myacuracy
 REMOVE_LAST = False
 abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "ykhaki" ]
 class_weight = {0: 0.5,    1: 1.0,    2: 0.5,     3: 1.0,   4 :1.0,    5:0.9,    6:2.0}
-d_weight = {0: 0.85,    1: 1.0,    2: 1.0,     3: 1.0,   4 :0.9,    5:1.0,    6:1.0}
+d_weight = {0: 0.85,    1: 1.0,    2: 0.70,     3: 1.0,   4 :0.9,    5:1.0,    6:1.0}
 
 if(REMOVE_LAST):
     abcLabels.pop()
     class_weight.popitem()
 
 #TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
-TEST_DIR_NAME = ["Exam1_clean_cc" , "UnifiedTest"][0]
+TEST_DIR_NAME = ["Exam1_clean_cc" , "UnifiedTest"][1]
 TRAIN_DIR_NAME = r'UnifiedTrain'
 #TRAIN_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
@@ -62,7 +62,7 @@ JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 64
+batch_size = 256
 steps_per_epoch = 100
 nb_epoch = 2000
 MINI_TRAIN = False # debug

@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 
 def myacuracy(y_true,y_pred):
    #K.mean(K.equal(K.argmax(y_true, axis=-1), K.argmax(y_pred, axis=-1)))
-    return 0;
+    return 0
 
 def display_annotated_db(test_set, model, hotEncodeReverse,sideS,onlyErrors):
     for idx, img_name in enumerate(test_set.filepaths):
@@ -60,9 +60,9 @@ def preprocess_hand_crafted(img):
     img[..., 1] -= mean[1]
     img[..., 2] -= mean[2]
 
-    img[..., 0] /= 255.0
-    img[..., 1] /= 255.0
-    img[..., 2] /= 255.0
+    # img[..., 0] /= 255.0
+    # img[..., 1] /= 255.0
+    # img[..., 2] /= 255.0
 
     return img
 
