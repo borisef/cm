@@ -59,7 +59,7 @@ def mnist_net(num_classes, side_size):
     sgd = SGD(lr=1e-2, decay=1e-6, momentum=0.7, nesterov=True)
     adam = Adam(lr=1e-4)
     opt = optimizors(random_optimizor=True)
-    rmsprop = RMSprop(learning_rate=0.005)
+    rmsprop = RMSprop(lr=0.005)
     model.compile(loss='categorical_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
 
     return model

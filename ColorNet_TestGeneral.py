@@ -37,8 +37,8 @@ REMOVE_LAST = False
 mini_mode = False
 
 TEST_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"#
-TEST_DIR_NAME =  ["Exam1_clean_cc" , "UnifiedTest"][0]
-OUTPUT_DIR_NAME = "outColorNetOutputs_try20/"
+TEST_DIR_NAME =  ["Exam1_clean_cc" , "UnifiedTest",  "UnifiedTest_clean", "Exam2_clean_cc"][0]
+OUTPUT_DIR_NAME = "outColorNetOutputs_try22/"
 train_ckpts_dir_name = "train_ckpts"
 model_name = 'color_model.h5'
 weights_name = 'ckpt_best.hdf5'

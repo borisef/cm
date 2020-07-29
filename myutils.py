@@ -54,15 +54,30 @@ def numpyRGB2BGR(rgb):
 
 def preprocess_hand_crafted(img):
     img = img[..., ::-1]
-    mean = [103.939, 116.779, 123.68]
-    mean = [105.0, 115.0, 125.0]
-    img[..., 0] -= mean[0]
-    img[..., 1] -= mean[1]
-    img[..., 2] -= mean[2]
+    # mean = [103.939, 116.779, 123.68]
+    # mean = [105.0, 115.0, 125.0]
+    # img[..., 0] -= mean[0]
+    # img[..., 1] -= mean[1]
+    # img[..., 2] -= mean[2]
 
-    # img[..., 0] /= 255.0
-    # img[..., 1] /= 255.0
-    # img[..., 2] /= 255.0
+    img[..., 0] /= 255.0
+    img[..., 1] /= 255.0
+    img[..., 2] /= 255.0
+
+    return img
+
+
+def preprocess_hand_crafted_add_blue(img):
+    img = img[..., ::-1]
+    # mean = [103.939, 116.779, 123.68]
+    # mean = [105.0, 115.0, 125.0]
+    img[..., 0] -= -20.0
+    img[..., 1] -= 7.0
+    img[..., 2] -= 14.0
+
+    img[..., 0] /= 255.0
+    img[..., 1] /= 255.0
+    img[..., 2] /= 255.0
 
     return img
 

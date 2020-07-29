@@ -44,7 +44,7 @@ from  myutils import myacuracy
 REMOVE_LAST = False
 abcLabels = ["black",       "blue",     "gray",     "green",  "red",    "white", "ykhaki" ]
 class_weight = {0: 0.5,    1: 1.0,    2: 0.5,     3: 1.0,   4 :1.0,    5:0.9,    6:2.0}
-d_weight = {0: 0.85,    1: 1.0,    2: 0.70,     3: 1.0,   4 :0.9,    5:1.0,    6:1.0}
+d_weight = {0: 0.85,    1: 1.0,    2: 0.6,     3: 1.0,   4 :0.85,    5:0.9,    6:1.4}
 
 if(REMOVE_LAST):
     abcLabels.pop()
@@ -55,14 +55,14 @@ TEST_DIR_NAME = ["Exam1_clean_cc" , "UnifiedTest"][1]
 TRAIN_DIR_NAME = r'UnifiedTrain'
 #TRAIN_DIR_NAME = "Kobi/test_colorDB_without_truncation_mini_cleaned"
 MINI_TRAIN_DIR_NAME = r'Database_clean_unified_augmented4mini'
-OUTPUT_DIR_NAME = "outColorNetOutputs_try20/"
+OUTPUT_DIR_NAME = "outColorNetOutputs_try25/"
 LOAD_FROM_CKPT = None
-#LOAD_FROM_CKPT = "E:/projects/MB2/cm/Output/outColorNetOutputs_24_06_20/train_ckpts/ckpt_best.hdf5"
+#LOAD_FROM_CKPT = "/home/borisef/projects/cm/Output/outColorNetOutputs_try21/train_ckpts/ckpt_best.hdf5"
 JUST_SAVE = False
 
 img_rows, img_cols = 128, 128
 num_classes = 7 - int(REMOVE_LAST)
-batch_size = 256
+batch_size = 512
 steps_per_epoch = 100
 nb_epoch = 2000
 MINI_TRAIN = False # debug
@@ -94,7 +94,7 @@ train_datagen = ImageDataGenerator(
     # height_shift_range=[-0.025,0.025],
     # brightness_range=[0.85,1.15],
     #preprocessing_function=myutils.numpyRGB2BGR,
-    preprocessing_function=myutils.preprocess_hand_crafted
+    preprocessing_function=myutils.preprocess_hand_crafted_add_blue
     #preprocessing_function=myutils.numpyRGB2BGR
     #validation_split=0.0
 )
@@ -102,7 +102,7 @@ train_datagen = ImageDataGenerator(
 test_datagen = ImageDataGenerator(
     #rescale=1. / 255,
     #preprocessing_function=myutils.numpyRGB2BGR
-    preprocessing_function=myutils.preprocess_hand_crafted
+    preprocessing_function=myutils.preprocess_hand_crafted_add_blue
 )
 
 
@@ -188,7 +188,7 @@ filepath_last=  train_ckpts_dir + "/" + "ckpt_last.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 checkpointLast = ModelCheckpoint(filepath_last, monitor='val_acc', verbose=1, save_best_only=False)
 checkpoint_best = ModelCheckpoint(filepath_best, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=30)
+es = tf.keras.callbacks.EarlyStopping(monitor='val_acc', mode='max', verbose=1, patience=10)
 callbacks_list = [checkpoint, checkpoint_best, checkpointLast, es]
 
 weights = myutils.calc_weights(training_set.labels, training_set.class_indices)
